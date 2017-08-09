@@ -57,7 +57,6 @@ class SketchComponent extends IdyllComponent {
          }
         newState.sketch = new p5(_sketch, div);
       }
-      console.log({ newState });
       this.setState(newState);
     }
   }
@@ -130,7 +129,6 @@ class SketchComponent extends IdyllComponent {
 class Sketch extends Component {
   render() {
     const { props } = this;
-    console.log(props);
     return (
       <RemountOnResize
         /* Since canvas interferes with CSS layouting,
