@@ -2,40 +2,19 @@
 
 [Header
   title:"idyll-p5"
-  subtitle:"Welcome to Idyll. Open index.idl to start writing"
+  subtitle:"p5.js in idyll!"
   author:"Job van der Zwan"
   authorLink:"https://idyll-lang.github.io" /]
 
-This is an Idyll file. Write text
-as you please in here. To add interactivity,
-you can add  different components to the text.
-
-Here is how you can use a variable:
-
-[var name:"exampleVar" value:5 /]
-
-[Range min:0 max:10 value:exampleVar /]
-[Display value:exampleVar /]
-
-```js
-var code = true;
-```
-
-And here is a custom component:
-
-[CustomComponent /]
-
-You can use standard html tags if a
-component with the same name
-doesn't exist.
-
-* *markdown* syntax is supported.
+Try resizing the browser window to less than the size of the sketch!
 
 [Sketch height:400 sketchFunc:"
   return (p5) => {
+
     p5.setup = () => {
       p5.strokeWeight(10);
     }
+
     p5.draw = () => {
       p5.fill(0, 5);
       p5.noStroke();

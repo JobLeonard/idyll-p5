@@ -2,7 +2,7 @@ import { Component } from 'react';
 
 import debounce from 'lodash/debounce';
 
-// import MobileDetect from 'mobile-detect';
+import MobileDetect from 'mobile-detect';
 
 export class RemountOnResize extends Component {
 	constructor(props) {
@@ -13,42 +13,35 @@ export class RemountOnResize extends Component {
 			isPortrait: window.innerHeight > window.innerWidth
 		};
 
-		// // On certain mobile devices, the software keyboard
-		// // triggers a resize event. In that case, we do not
-		// // want to trigger the remount. Instead, we want
-		// // to trigger a resize only when switching between
-		// // portrait and landscape modes.
-		// // This assumes the keyboard does not take up more
-		// // than half of the screen, which is not always
-		// // true but it's a decent enough hack.
-		// const isMobile = new MobileDetect(window.navigator.userAgent).mobile();
-		// const resize = isMobile ? (
-		// 	() => {
-		// 		let isPortrait = window.innerHeight > window.innerWidth;
-		// 		if (isPortrait !== this.state.isPortrait || !this.state.resizing) {
-		// 			this.setState({
-		// 				resizing: true,
-		// 				isPortrait
-		// 			});
-		// 		}
-		// 	}
-		// ) : (
-		// 	() => {
-		// 		if (!this.state.resizing) {
-		// 			this.setState({
-		// 				resizing: true
-		// 			});
-		// 		}
-		// 	}
-		// );
-
-		const resize = () => {
-			if (!this.state.resizing) {
-				this.setState({
-					resizing: true
-				});
+		// On certain mobile devices, the software keyboard
+		// triggers a resize event. In that case, we do not
+		// want to trigger the remount. Instead, we want
+		// to trigger a resize only when switching between
+		// portrait and landscape modes.
+		// This assumes the keyboard does not take up more
+		// than half of the screen, which is not always
+		// true but it's a decent enough hack.
+		const isMobile = new MobileDetect(window.navigator.userAgent).mobile();
+		const resize = isMobile ? (
+			() => {
+				let isPortrait = window.innerHeight > window.innerWidth;
+				if (isPortrait !== this.state.isPortrait || !this.state.resizing) {
+					this.setState({
+						resizing: true,
+						isPortrait
+					});
+				}
 			}
-		}
+		) : (
+			() => {
+				if (!this.state.resizing) {
+					this.setState({
+						resizing: true
+					});
+				}
+			}
+		);
+
 
 		// Because the resize event can fire very often when
 		// dragging a window, we add a debouncer to minimise
@@ -59,12 +52,12 @@ export class RemountOnResize extends Component {
 	}
 
 	componentDidMount() {
-		//window.addEventListener('resize', this.setResize);
+		window.addEventListener('resize', this.setResize);
 		this.setState({ resizing: false });
 	}
 
 	componentWillUnmount() {
-		//window.removeEventListener('resize', this.setResize);
+		window.removeEventListener('resize', this.setResize);
 		this.setResize.cancel();
 	}
 
