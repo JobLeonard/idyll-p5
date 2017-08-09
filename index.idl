@@ -6,21 +6,79 @@
   author:"Job van der Zwan"
   authorLink:"https://idyll-lang.github.io" /]
 
+A component wrapping [the p5js library](https://p5js.org/). It uses [p5's `instance mode`](https://github.com/processing/p5.js/wiki/Global-and-instance-mode), but adds a few subtle differences and conveniences.
+
+- **DO NOT USE `createCanvas` in p5.setup!** The size depends on the container that holds the sketch, and the Sketch component handles this logic.
+- You can either use CSS to give it a size, or pass a `width` and/or `height` prop (which can be both a number or CSS again).
+- The sketch remounts upon resize, making sure it is the correct size if, for example, you pass a percentage
+- An optional `p5.receiveProps` function can be defined to pass props passed to the Sketch component onto the p5 sketch code.
+- An optional `p5.unmount` function can be defined, in case the sketch needs to handle something before unmounting the component
+- The function is passed a `width`, `height`, `sketchProps` and `updates`
+  - `width` and `height` are what you expect, in pixels
+  - `sketchProps` can be used to pass other variables to the sketch
+  - `updates` is a function that can be called to broadcase variables back
+
 Try resizing the browser window to less than the size of the sketch!
+[var name:"exampleVar" value:5 /]
 
-[Sketch height:400 sketchFunc:"
-  return (p5) => {
-
+[Sketch height:400 sketchProps:exampleVar sketchFunc:"
+  return function (p5) {
+    let value = sketchProps;
     p5.setup = () => {
-      p5.strokeWeight(10);
+      p5.strokeWeight((1 + value)/4);
     }
 
     p5.draw = () => {
-      p5.fill(0, 5);
+      p5.fill(value, 16);
       p5.noStroke();
       p5.rect(0, 0, width, height);
-      p5.stroke(255);
+      p5.stroke((value + 128) % 256);
       p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
+    };
+
+    p5.receiveProps = (nextProps) => {
+      value = nextProps;
+      p5.strokeWeight((1 + value)/4);
+    };
+
+    p5.unmount = () => {
+      console.log('The sketch was unmounted. Width was ' +
+      width + ', height was ' + height);
     }
-  };
+  }
 " /]
+[Range min:0 max:255 value:exampleVar /]
+
+Code for the above demo:
+
+```js
+[var name:"exampleVar" value:5 /]
+
+[Sketch height:400 sketchProps:exampleVar sketchFunc:"
+  return function (p5) {
+    let value = sketchProps;
+    p5.setup = () => {
+      p5.strokeWeight((1 + value)/4);
+    }
+
+    p5.draw = () => {
+      p5.fill(value, 16);
+      p5.noStroke();
+      p5.rect(0, 0, width, height);
+      p5.stroke((value + 128) % 256);
+      p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
+    };
+
+    p5.receiveProps = (nextProps) => {
+      value = nextProps;
+      p5.strokeWeight((1 + value)/4);
+    };
+
+    p5.unmount = () => {
+      console.log('The sketch was unmounted. Width was ' +
+      width + ', height was ' + height);
+    }
+  }
+" /]
+[Range min:0 max:255 value:exampleVar /]
+```

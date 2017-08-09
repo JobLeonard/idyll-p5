@@ -5,12 +5,10 @@ import { RemountOnResize } from './remount';
 
 import p5 from 'p5';
 
-// Wraps retina logic.
-// To determine size/layout, we can use CSS on the div
-// containing the sketch (we can use this with flexbox,
-// for example), or pass a `width` and `height` prop.
-// Expects a "sketch" function that generates an *actual*
-// p5-sketch function, to be passed to p5. (see example)
+// A helper component, wrapping retina and zoom logic and
+// auto-resizing the sketch to fill its parent container.
+// To determine size/layout, we just use CSS on the div containing
+// the Sketch component (we might use this with flexbox, for example).
 class SketchComponent extends IdyllComponent {
 
   constructor(props) {
@@ -19,11 +17,11 @@ class SketchComponent extends IdyllComponent {
     this.state = {};
   }
 
+  // The way canvas interacts with CSS layouting is a bit buggy
+  // and inconsistent across browsers. To make it dependent on
+  // the layout of the parent container, we only render it after
+  // mounting view, that is: after CSS layouting is done.
   mountedContainer(div) {
-    // Scaling lets us adjust the painter function for
-    // high density displays and zoomed browsers.
-    // Painter functions decide how to use scaling
-    // on a case-by-case basis.
     if (div) {
       const ratio = window.devicePixelRatio || 1;
       const width = (div.clientWidth * ratio) | 0;
@@ -31,7 +29,7 @@ class SketchComponent extends IdyllComponent {
       let newState = { div, width, height, ratio };
       let { sketchFunc, sketchProps, noCanvas } = this.props;
       if (sketchFunc) {
-        sketchFunc = new Function('width', 'height', 'props', 'updates', sketchFunc);
+        sketchFunc = new Function('width', 'height', 'sketchProps', 'updates', sketchFunc);
         const _sketch = (p5) => {
           sketchFunc(width, height, sketchProps, this.updates)(p5);
 
@@ -54,7 +52,7 @@ class SketchComponent extends IdyllComponent {
             }
             p5.remove();
           }
-         }
+        }
         newState.sketch = new p5(_sketch, div);
       }
       this.setState(newState);
@@ -62,9 +60,10 @@ class SketchComponent extends IdyllComponent {
   }
 
   componentWillReceiveProps(nextProps) {
+    // pass relevant props to sketch
     const { sketch } = this.state;
-    if (sketch.receiveProps) {
-      sketch.receiveProps(nextProps);
+    if (sketch.receiveProps && nextProps.sketchProps) {
+      sketch.receiveProps(nextProps.sketchProps);
     }
   }
 
@@ -75,9 +74,6 @@ class SketchComponent extends IdyllComponent {
   }
 
   render() {
-    // If not given a width or height prop, make these fill their parent div
-    // This will implicitly set the size of the sketch component, which
-    // will then call the passed paint function with the right dimensions.
     const { props } = this;
     let style = Object.assign({}, props.style);
     let { width, height } = props;
