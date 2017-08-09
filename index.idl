@@ -19,11 +19,12 @@ A component wrapping [the p5js library](https://p5js.org/). It uses [p5's `insta
   - `updates` is a function that can be called to broadcase variables back
 
 Try resizing the browser window to less than the size of the sketch!
+
 [var name:"exampleVar" value:5 /]
 
-[Sketch height:400 sketchProps:exampleVar sketchFunc:"
+[Sketch height:400 sketchProps:`{value: exampleVar}` sketchFunc:"
   return function (p5) {
-    let value = sketchProps;
+    let value = sketchProps.value;
     p5.setup = () => {
       p5.strokeWeight((1 + value)/4);
     }
@@ -37,7 +38,7 @@ Try resizing the browser window to less than the size of the sketch!
     };
 
     p5.receiveProps = (nextProps) => {
-      value = nextProps;
+      value = nextProps.value;
       p5.strokeWeight((1 + value)/4);
     };
 
@@ -47,6 +48,7 @@ Try resizing the browser window to less than the size of the sketch!
     }
   }
 " /]
+
 [Range min:0 max:255 value:exampleVar /]
 
 Code for the above demo:
@@ -54,9 +56,9 @@ Code for the above demo:
 ```js
 [var name:"exampleVar" value:5 /]
 
-[Sketch height:400 sketchProps:exampleVar sketchFunc:"
+[Sketch height:400 sketchProps:`{value: exampleVar}` sketchFunc:"
   return function (p5) {
-    let value = sketchProps;
+    let value = sketchProps.value;
     p5.setup = () => {
       p5.strokeWeight((1 + value)/4);
     }
@@ -70,7 +72,7 @@ Code for the above demo:
     };
 
     p5.receiveProps = (nextProps) => {
-      value = nextProps;
+      value = nextProps.value;
       p5.strokeWeight((1 + value)/4);
     };
 
@@ -80,5 +82,6 @@ Code for the above demo:
     }
   }
 " /]
+
 [Range min:0 max:255 value:exampleVar /]
 ```
