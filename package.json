@@ -1,0 +1,17 @@
+{
+  "name": "idyll-p5",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "idyll index.idl --defaultComponents ./components/default --css styles.css --theme github --spellcheck --watch",
+    "build": "idyll index.idl --defaultComponents ./components/default --theme github --css styles.css; cp -r {images,fonts} build/;",
+    "deploy": "npm run build && gh-pages -d ./build"
+  },
+  "dependencies": {
+    "idyll": "^1.12.0",
+    "mobile-detect": "^1.3.6",
+    "p5": "^0.5.11"
+  },
+  "devDependencies": {
+    "gh-pages": "^0.12.0"
+  }
+}
