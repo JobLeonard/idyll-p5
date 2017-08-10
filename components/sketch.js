@@ -23,11 +23,10 @@ class SketchComponent extends IdyllComponent {
   // mounting view, that is: after CSS layouting is done.
   mountedContainer(div) {
     if (div) {
-      let { sketchFunc, sketchProps, noCanvas, crisp } = this.props;
-      const ratio = crisp ? window.devicePixelRatio || 1 : 1;
-      const width = (div.clientWidth * ratio) | 0;
-      const height = (div.clientHeight * ratio) | 0;
-      let newState = { div, width, height, ratio };
+      let { sketchFunc, sketchProps, noCanvas } = this.props;
+      const width = div.clientWidth | 0;
+      const height = div.clientHeight | 0;
+      let newState = { div, width, height };
 
       if (sketchFunc) {
         sketchFunc = new Function('width', 'height', 'sketchProps', 'updates', sketchFunc);
@@ -43,7 +42,6 @@ class SketchComponent extends IdyllComponent {
             };
           } else {
             p5.setup = () => {
-              if (crisp) { p5.pixelDensity(1); }
               p5.createCanvas(width, height);
             };
           }
@@ -140,7 +138,6 @@ class Sketch extends Component {
           sketchFunc={props.sketchFunc}
           sketchProps={props.sketchProps}
           noCanvas={props.noCanvas}
-          crisp={props.crisp}
           width={props.width}
           height={props.height}
           style={props.style}
