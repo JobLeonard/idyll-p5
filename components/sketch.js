@@ -32,6 +32,9 @@ class SketchComponent extends IdyllComponent {
         } else {
           width = (div.clientHeight * ratio) | 0;
         }
+      } else if (!this.props.width && !this.props.height){
+        // default to 2:1 ratio
+        height = (div.clientWidth * 0.5) | 0;
       }
       let newState = { div, width, height, ratio };
 
@@ -120,7 +123,7 @@ class SketchComponent extends IdyllComponent {
       }
     }
 
-    style.margin = style.margin ? style.margin : '0 auto';
+    style.margin = style.margin ? style.margin : '1em auto';
 
     return (
       <div
