@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import IdyllComponent from 'idyll-component';
-
 import { RemountOnResize } from './remount';
 
-import p5 from 'p5';
 
 // A helper component, wrapping retina and zoom logic and
 // auto-resizing the sketch to fill its parent container.
@@ -22,8 +20,9 @@ class SketchComponent extends IdyllComponent {
   // the layout of the parent container, we only render it after
   // mounting view, that is: after CSS layouting is done.
   mountedContainer(div) {
+    const p5 = require('p5');
     if (div) {
-      let { sketch, sketchProps, webGL, noCanvas, ratio } = this.props;
+      let { sketch, sketchProps, webGL, noCanvas, ratio, updateProps } = this.props;
       let width = div.clientWidth | 0;
       let height = div.clientHeight | 0;
       if (ratio) {
@@ -39,12 +38,8 @@ class SketchComponent extends IdyllComponent {
       let newState = { div, width, height, ratio };
 
       if (sketch) {
-        sketch = 'return function (p5) {' + sketch + '}';
-        const compiledSketch = new Function('width', 'height', 'devicePixelRatio', 'sketchProps', 'updates', sketch);
-
         const _sketch = (p5) => {
-          compiledSketch(width, height, window.devicePixelRatio, sketchProps, this.udateProps)(p5);
-
+          sketch(p5, { width, height, devicePixelRatio: window.devicePixelRatio, updates: updateProps});
 
           // handle creation of canvas
           const _setup = p5.setup || (() => { });
@@ -159,10 +154,12 @@ class Sketch extends Component {
           ratio={props.ratio}
           style={props.style}
           className={props.className}
+          updateProps={this.updateProps}
         />
       </RemountOnResize>
     );
   }
 }
+
 
 module.exports = Sketch;

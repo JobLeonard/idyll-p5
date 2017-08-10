@@ -2,8 +2,8 @@
   "name": "idyll-p5",
   "version": "1.0.0",
   "scripts": {
-    "start": "idyll index.idl -r --defaultComponents ./components/default --css styles.css --theme github --spellcheck --watch",
-    "build": "idyll index.idl -r --defaultComponents ./components/default --theme github --css styles.css; cp -r {images,fonts} build/;",
+    "start": "idyll index.idl --defaultComponents ./components/default --css styles.css --theme github --spellcheck --watch",
+    "build": "idyll index.idl --defaultComponents ./components/default --theme github --css styles.css;",
     "deploy": "npm run build && gh-pages -d ./build"
   },
   "dependencies": {

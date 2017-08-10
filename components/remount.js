@@ -10,9 +10,11 @@ export class RemountOnResize extends Component {
 
 		this.state = {
 			resizing: true,
-			isPortrait: window.innerHeight > window.innerWidth
+			isPortrait: (typeof window === 'undefined') ? false : window.innerHeight > window.innerWidth
 		};
+	}
 
+	componentDidMount() {
 		// On certain mobile devices, the software keyboard
 		// triggers a resize event. In that case, we do not
 		// want to trigger the remount. Instead, we want
@@ -47,11 +49,8 @@ export class RemountOnResize extends Component {
 		// dragging a window, we add a debouncer to minimise
 		// pointlessly unmounting, remounting and resizing
 		// of the child nodes, with 200 ms as the default
-		let delay = props.delay !== undefined ? props.delay : 200;
+		let delay = this.props.delay !== undefined ? this.props.delay : 200;
 		this.setResize = debounce(resize, delay);
-	}
-
-	componentDidMount() {
 		window.addEventListener('resize', this.setResize);
 		this.setState({ resizing: false });
 	}
