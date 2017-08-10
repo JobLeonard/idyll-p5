@@ -23,25 +23,30 @@ class SketchComponent extends IdyllComponent {
   // mounting view, that is: after CSS layouting is done.
   mountedContainer(div) {
     if (div) {
-      const ratio = window.devicePixelRatio || 1;
+      let { sketchFunc, sketchProps, noCanvas, crisp } = this.props;
+      const ratio = crisp ? window.devicePixelRatio || 1 : 1;
       const width = (div.clientWidth * ratio) | 0;
       const height = (div.clientHeight * ratio) | 0;
       let newState = { div, width, height, ratio };
-      let { sketchFunc, sketchProps, noCanvas } = this.props;
+
       if (sketchFunc) {
         sketchFunc = new Function('width', 'height', 'sketchProps', 'updates', sketchFunc);
         const _sketch = (p5) => {
           sketchFunc(width, height, sketchProps, this.updates)(p5);
 
           // handle creation of canvas
-          const _setup = p5.setup ? p5.setup : () => { };
-          p5.setup = noCanvas ? () => {
-            p5.noCanvas();
-            _setup();
-          } : () => {
-            p5.createCanvas(width, height);
-            _setup();
-          };
+          const _setup = p5.setup || (() => { });
+          if (noCanvas) {
+            p5.setup = () => {
+              p5.noCanvas();
+              _setup();
+            };
+          } else {
+            p5.setup = () => {
+              if (crisp) { p5.pixelDensity(1); }
+              p5.createCanvas(width, height);
+            };
+          }
 
 
           // handle removing the sketch if the component unmounts
@@ -135,6 +140,7 @@ class Sketch extends Component {
           sketchFunc={props.sketchFunc}
           sketchProps={props.sketchProps}
           noCanvas={props.noCanvas}
+          crisp={props.crisp}
           width={props.width}
           height={props.height}
           style={props.style}
