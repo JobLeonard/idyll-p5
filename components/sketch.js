@@ -23,7 +23,7 @@ class SketchComponent extends IdyllComponent {
   // mounting view, that is: after CSS layouting is done.
   mountedContainer(div) {
     if (div) {
-      let { sketchFunc, sketchProps, noCanvas, ratio } = this.props;
+      let { sketch, sketchProps, webGL, noCanvas, ratio } = this.props;
       let width = div.clientWidth | 0;
       let height = div.clientHeight | 0;
       if (ratio) {
@@ -38,10 +38,13 @@ class SketchComponent extends IdyllComponent {
       }
       let newState = { div, width, height, ratio };
 
-      if (sketchFunc) {
-        sketchFunc = new Function('width', 'height', 'devicePixelRatio', 'sketchProps', 'updates', sketchFunc);
+      if (sketch) {
+        sketch = 'return function (p5) {' + sketch + '}';
+        const compiledSketch = new Function('width', 'height', 'devicePixelRatio', 'sketchProps', 'updates', sketch);
+
         const _sketch = (p5) => {
-          sketchFunc(width, height, window.devicePixelRatio, sketchProps, this.updates)(p5);
+          compiledSketch(width, height, window.devicePixelRatio, sketchProps, this.updates)(p5);
+
 
           // handle creation of canvas
           const _setup = p5.setup || (() => { });
@@ -52,10 +55,9 @@ class SketchComponent extends IdyllComponent {
             };
           } else {
             p5.setup = () => {
-              p5.createCanvas(width, height);
+              p5.createCanvas(width, height, webGL? p5.WEBGL : p5.P2D);
             };
           }
-
 
           // handle removing the sketch if the component unmounts
           const _unmount = p5.unmount;
@@ -150,8 +152,9 @@ class Sketch extends Component {
         watchedVal={props.watchedVal}
       >
         <SketchComponent
-          sketchFunc={props.sketchFunc}
+          sketch={props.sketch}
           sketchProps={props.sketchProps}
+          webGL={props.webGL}
           noCanvas={props.noCanvas}
           width={props.width}
           height={props.height}
