@@ -21,12 +21,11 @@ A component wrapping [the p5js library](https://p5js.org/). It uses [p5's `insta
 Try resizing the browser window to less than the size of the sketch!
 
 [var name:"exampleVar" value:5 /]
-
-[Sketch height:400 sketchProps:`{value: exampleVar}` sketchFunc:"
+[var name:"sketchDemo" value:"
   return function (p5) {
     let value = sketchProps.value;
     p5.setup = () => {
-      p5.strokeWeight((1 + value)/4);
+      // no createCanvas required!
     }
 
     p5.draw = () => {
@@ -34,12 +33,12 @@ Try resizing the browser window to less than the size of the sketch!
       p5.noStroke();
       p5.rect(0, 0, width, height);
       p5.stroke((value + 128) % 256);
+      p5.strokeWeight((2 + value)/4);
       p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
     };
 
     p5.receiveProps = (nextProps) => {
       value = nextProps.value;
-      p5.strokeWeight((1 + value)/4);
     };
 
     p5.unmount = () => {
@@ -48,19 +47,23 @@ Try resizing the browser window to less than the size of the sketch!
     }
   }
 " /]
+
+[Sketch
+  height:400
+  sketchProps:`{value: exampleVar}`
+  sketchFunc:sketchDemo /]
 
 [Range min:0 max:255 value:exampleVar /]
 
 Code for the above demo:
 
-```js
+```
 [var name:"exampleVar" value:5 /]
-
-[Sketch height:400 sketchProps:`{value: exampleVar}` sketchFunc:"
+[var name:"sketchDemo" value:"
   return function (p5) {
     let value = sketchProps.value;
     p5.setup = () => {
-      p5.strokeWeight((1 + value)/4);
+      // no createCanvas required!
     }
 
     p5.draw = () => {
@@ -68,12 +71,12 @@ Code for the above demo:
       p5.noStroke();
       p5.rect(0, 0, width, height);
       p5.stroke((value + 128) % 256);
+      p5.strokeWeight((2 + value)/4);
       p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
     };
 
     p5.receiveProps = (nextProps) => {
       value = nextProps.value;
-      p5.strokeWeight((1 + value)/4);
     };
 
     p5.unmount = () => {
@@ -83,5 +86,66 @@ Code for the above demo:
   }
 " /]
 
+[Sketch
+  height:400
+  sketchProps:`{value: exampleVar}`
+  sketchFunc:sketchDemo /]
+
 [Range min:0 max:255 value:exampleVar /]
+```
+
+You can also pass a `watchedVal` that triggers a reset whenever you click it
+[var name:"resetSketch" value:0 /]
+[var name:"sketch2" value:"
+  return function (p5) {
+    let x = width/2, y = height/2, dx = 0;
+
+    p5.draw = () => {
+      p5.fill(0, 4);
+      p5.noStroke();
+      p5.rect(0, 0, width, height);
+      p5.stroke(256);
+      const dx_scaled = dx / (1<<4);
+      p5.strokeWeight(20 + dx_scaled);
+      p5.line(x, y, x+dx_scaled, y);
+      x = (x+dx_scaled)%width;
+      p5.line(x-dx_scaled, y, x, y);
+      dx++;
+    };
+  }
+" /]
+
+[Sketch
+  height:400
+  watchedVal:resetSketch
+  sketchFunc:sketch2 /]
+[Button onClick:`resetSketch++`]Reset Sketch![/Button]
+
+```
+[var name:"resetSketch" value:0 /]
+[var name:"sketch2" value:"
+  return function (p5) {
+    let x = width/2, y = height/2, dx = 0;
+
+    p5.draw = () => {
+      p5.fill(0, 4);
+      p5.noStroke();
+      p5.rect(0, 0, width, height);
+      p5.stroke(256);
+      const dx_scaled = dx / (1<<4);
+      p5.strokeWeight(20 + dx_scaled);
+      p5.line(x, y, x+dx_scaled, y);
+      x = (x+dx_scaled)%width;
+      p5.line(x-dx_scaled, y, x, y);
+      dx++;
+    };
+  }
+" /]
+
+[Sketch
+  height:400
+  watchedVal:resetSketch
+  sketchFunc:sketch2 /]
+[Button onClick:`resetSketch++`]Reset Sketch![/Button]
+
 ```
