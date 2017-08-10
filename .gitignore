@@ -10,6 +10,7 @@
 
 # Build folder
 /build
+.idyll
 
 # Visual Studio Code
 .vscode/
