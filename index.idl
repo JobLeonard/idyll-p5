@@ -6,7 +6,7 @@
   author:"Job van der Zwan"
   authorLink:"https://github.com/JobLeonard/idyll-p5" /]
 
-Embed [p5js sketches](https://p5js.org/) (relatively) easily in idyll with this custom component! [Source code for the component here](https://github.com/JobLeonard/idyll-p5)
+Embed [p5js sketches](https://p5js.org/) (relatively) easily in idyll with this custom component! Source code for the component and this page [in this github repository](https://github.com/JobLeonard/idyll-p5)
 
 **NOTE: p5js relies on the browser** `window` **object to work, so you will have to turn off server-side rendering!** (just pass `-r` as a flag to the `idyll` command - don't forget to edit your `npm start/build` scripts too!)
 
