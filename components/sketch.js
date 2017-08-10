@@ -28,9 +28,9 @@ class SketchComponent extends IdyllComponent {
       let height = div.clientHeight | 0;
       if (ratio) {
         if (this.props.width || !this.props.height) {
-          height = (div.clientWidth * ratio) | 0;
+          height = (div.clientWidth / ratio) | 0;
         } else {
-          width = (div.clientHeight / ratio) | 0;
+          width = (div.clientHeight * ratio) | 0;
         }
       }
       let newState = { div, width, height, ratio };
