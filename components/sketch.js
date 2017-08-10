@@ -43,7 +43,7 @@ class SketchComponent extends IdyllComponent {
         const compiledSketch = new Function('width', 'height', 'devicePixelRatio', 'sketchProps', 'updates', sketch);
 
         const _sketch = (p5) => {
-          compiledSketch(width, height, window.devicePixelRatio, sketchProps, this.updates)(p5);
+          compiledSketch(width, height, window.devicePixelRatio, sketchProps, this.udateProps)(p5);
 
 
           // handle creation of canvas
@@ -106,9 +106,7 @@ class SketchComponent extends IdyllComponent {
           ratio && (typeof height) === 'number' ? height / ratio : '100%';
       default:
     }
-    if (ratio && width) {
-      height = '100%';
-    } else {
+    if (!(ratio && width)) {
       switch (typeof height) {
         case 'number':
           height = height | 0;

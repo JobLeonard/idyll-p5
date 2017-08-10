@@ -32,7 +32,7 @@ Embed [p5js sketches](https://p5js.org/) (relatively) easily in idyll with this 
   }
 " /]
 
-```js
+```
 [Sketch webGL:1 ratio:1 sketch:"
   p5.draw = () => {
     const frame = p5.frameCount;
@@ -60,19 +60,14 @@ Embed [p5js sketches](https://p5js.org/) (relatively) easily in idyll with this 
 
 (WebGL example taken from [p5js examples website](https://p5js.org/examples/3d-sine-cosine-in-3d.html))
 
-**NOTE: p5js relies on the browser's** `window` **object to work, so to use the library with idyll you have to turn off server-side rendering!** Just pass `-r` as a flag to the `idyll` command - don't forget to edit your `npm start/build` scripts too!
+**NOTE: p5js relies on the browser's** `window` **object to work, so to use the library with idyll you have to turn off server-side rendering!** Just pass `-r` as a flag to the `idyll` command. If you're building on a `yo idyll`-generated template, remember to edit your `npm` scripts too! (they can be found in `package.json` )
 
-The component uses p5's [instance mode](https://github.com/processing/p5.js/wiki/Global-and-instance-mode), but there are a few subtle differences, and a few added conveniences to play nice with idyll.
+To embed a sketch, we have to use [instance mode](https://github.com/processing/p5.js/wiki/Global-and-instance-mode). The code is passed as a string representing the *function body* of an instance mode sketch. So:
 
-- The code for a sketch is passed as a string representing the *function body* of an instance mode sketch. So:
-
-```js
+```
 function sketch(p5){
-
   p5.setup = () => { /* setup code */  };
-
   p5.draw = () => { /* draw code */ };
-
   // etc.
 }
 ```
@@ -80,56 +75,51 @@ function sketch(p5){
 Becomes:
 
 ```
-[Sketch sketchFun:"
+[Sketch sketch:"
   p5.setup = () => {
-    /**
-     * setup code.
-     * DO NOT USE createCanvas here!
-     * See below for explanation
-     */
+    /* DO NOT USE createCanvas here! */
   };
-
   p5.draw = () => { /* draw code */ };
-
   // etc.
 " /]
 ```
 
-**IMPORTANT: DO NOT USE** `createCanvas` **in p5.setup!** The size depends on the container that holds the sketch, and the Sketch component handles this logic. This is explained in more detail below, at *Overriding size and ratio*.
+There are a few more subtle differences with regular p5 code, and a few added conveniences to play nice with idyll. First, the Sketch component handles the sketch size. That is probably worth emphasizing:
 
-The sketch unmounts and resets in response to resize events, making sure it stays the correct size. If the sketch needs to run special code before unmounting the component, define a `p5.unmount` function. If will be triggered just before the component unmounts. You can also pass a `watchedVal` to the Sketch component, which will trigger a reset whenever it changes (see below under *Manually triggered resets*)
+**IMPORTANT: DO NOT USE** `createCanvas` **in p5.setup!** The size depends on the container that holds the sketch, and the Sketch component handles this logic. This is explained in more detail below, at *Sketch size and ratio*.
 
-The function body does not have access to the global browser scope, so it is passed a number of variables (which you can set through idyll) to help a little bit with that:
+Because this function body does not have access to the global browser scope, it is passed variables that you can set through idyll to make life  little easier:
 
-  - `width` and `height`, which work like the normal p5 width/height. Note that this means you can use them before `setup()`.
-  - `sketchProps`, which can be used to pass idyll variables to the sketch. One can also define a `p5.receiveProps(sketchProps)` function in the sketch to handle any props being passed later.
-  - `updates`, a function that can be called to broadcast variables back to idyll.
-  - `devicePixelRatio`, which matches `window.devicePixelRatio`. Useful in case you want to respond to zoom- or high density display-related effect on the pixels.
+- `width` and `height`, which work like the normal p5 width/height. Note that this means you can use them before `setup()`. See _"Size and ratio"_ below
+- `sketchProps`, which can be used to pass idyll variables to the sketch. To listen to changes in these props, define a `p5.receiveProps(sketchProps)` function.
+- `devicePixelRatio`, which matches `window.devicePixelRatio`. Useful in case you want to respond to zoom- or high density display-related effect on the pixels.
 
+The sketch unmounts and resets in response to resize events to keep a correct size. To try this out, resize the browser window, or switch between portrain/landscape if you are on mobile.
 
-By default, the sketch is as wide as the text, and has a 2:1 ratio. You can override this in a number of ways, see *"Overriding size and ratio"* below.
+If the sketch needs to run specific code before unmounting the component, define a `p5.unmount` function. If will be triggered just before the component unmounts.
 
-
-Try resizing the browser window to less than the size of the sketch!
-
-[var name:"exampleVar" value:5 /]
+[var name:"bgColor" value:5 /]
+[var name:"lineColor" value:250 /]
 [var name:"sketchDemo" value:"
-  let value = sketchProps.value;
+  let { bgColor, lineColor } = sketchProps;
+  let size = 25;
   p5.setup = () => {
     // no createCanvas required!
   }
 
   p5.draw = () => {
-    p5.fill(value, 16);
+    p5.fill(bgColor, 16);
     p5.noStroke();
     p5.rect(0, 0, width, height);
-    p5.stroke((value + 128) % 256);
-    p5.strokeWeight((2 + value)/4);
+    size = 40 + 10*p5.sin(p5.frameCount * p5.PI / 60);
+    p5.stroke(lineColor);
+    p5.strokeWeight(size);
     p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
   };
 
   p5.receiveProps = (sketchProps) => {
-    value = sketchProps.value;
+    bgColor = sketchProps.bgColor;
+    lineColor = sketchProps.lineColor;
   };
 
   p5.unmount = () => {
@@ -139,32 +129,37 @@ Try resizing the browser window to less than the size of the sketch!
 " /]
 
 [Sketch
-  sketchProps:`{value: exampleVar}`
+  sketchProps:`{bgColor, lineColor}`
   sketch:sketchDemo /]
 
-[Range min:0 max:255 value:exampleVar /]
+Background Color: [Range min:0 max:255 value:bgColor /]
+Line Color: [Range min:0 max:255 value:lineColor /]
 
 Code for the above demo:
 
 ```
-[var name:"exampleVar" value:5 /]
+[var name:"bgColor" value:5 /]
+[var name:"lineColor" value:250 /]
 [var name:"sketchDemo" value:"
-  let value = sketchProps.value;
+  let { bgColor, lineColor } = sketchProps;
+  let size = 25;
   p5.setup = () => {
     // no createCanvas required!
   }
 
   p5.draw = () => {
-    p5.fill(value, 16);
+    p5.fill(bgColor, 16);
     p5.noStroke();
     p5.rect(0, 0, width, height);
-    p5.stroke((value + 128) % 256);
-    p5.strokeWeight((2 + value)/4);
+    size = 40 + 10*p5.sin(p5.frameCount * p5.PI / 60);
+    p5.stroke(lineColor);
+    p5.strokeWeight(size);
     p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
   };
 
   p5.receiveProps = (sketchProps) => {
-    value = sketchProps.value;
+    bgColor = sketchProps.bgColor;
+    lineColor = sketchProps.lineColor;
   };
 
   p5.unmount = () => {
@@ -174,22 +169,22 @@ Code for the above demo:
 " /]
 
 [Sketch
-  ratio:`16/9`
-  sketchProps:`{value: exampleVar}`
+  sketchProps:`{bgColor, lineColor}`
   sketch:sketchDemo /]
 
-[Range min:0 max:255 value:exampleVar /]
+Background Color: [Range min:0 max:255 value:bgColor /]
+Line Color: [Range min:0 max:255 value:lineColor /]
 ```
 
-# Overriding size and ratio
+# Sketch size and ratio
 
-By default, the width of the sketch is equal to the available space in the text, and height will be half of the width.
+By default, the width of the sketch is equal to column width of the text, and height will be half of the width.
 
-You can pass a value to `width` and `height` to override this. The value can be the number of pixels like `100`, or a CSS-valid string like `"50%"` or `"2em".
+You can pass a value to `width` and `height` to override this. The value can be the number of pixels like `100`, or a CSS-valid string like `"50%"` or `"2em"`.
 
-Note: by default, height depends on width, but width does not depend on height. Passing a value to `width` will make `height` half of the new width. Passing a value to `height` will not affect `width`, which will still be as wide as the text.
+By default, height depends on width, but width does not depend on height. Passing a value to `width` will make `height` half of the new width. Passing a value to `height` will not affect `width`, which will still be as wide as the text column.
 
-To enforce a ratio, you can pass a number to `ratio`, i.e. `ratio:\`3/1\`` will produce a sketch with a width three times that of the height, and if `height` is defined but `width` is not, the width will depend on height.
+To enforce a ratio, you can pass a number to `ratio`, i.e. the expression ``` ratio:`3/1` ``` will produce a sketch with a width three times the height.
 
  If no width is defined, but a height is, width depends on height (as you can see below, this part is still a bit buggy). If a ratio, width and height are defined, height is overridden to depend on width.
 
