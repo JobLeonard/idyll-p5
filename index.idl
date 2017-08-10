@@ -10,13 +10,14 @@ A component wrapping [the p5js library](https://p5js.org/). It uses [p5's `insta
 
 - **DO NOT USE `createCanvas` in p5.setup!** The size depends on the container that holds the sketch, and the Sketch component handles this logic.
 - You can either use CSS to give it a size, or pass a `width` and/or `height` prop (which can be both a number or CSS again).
-- The sketch remounts upon resize, making sure it is the correct size if, for example, you pass a percentage
+- The sketch remounts upon resize, making sure it stays the correct size
 - An optional `p5.receiveProps` function can be defined to pass props passed to the Sketch component onto the p5 sketch code.
 - An optional `p5.unmount` function can be defined, in case the sketch needs to handle something before unmounting the component
-- The function is passed a `width`, `height`, `sketchProps` and `updates`
-  - `width` and `height` are what you expect, in pixels
-  - `sketchProps` can be used to pass other variables to the sketch
-  - `updates` is a function that can be called to broadcase variables back
+- The function does not have access to the global browser scope, so it is passed a number of variables (which you can set through idyll) to help a little bit with that:
+    - `width` and `height`, which work like the normal p5 width/height
+    - `devicePixelRatio`, in case you want to respond to zoom- or high density display-settings
+    - `updates` is a function that can be called to broadcast variables back to idyll
+    - `sketchProps`, which can be used to pass idyll variables to the sketch
 
 Try resizing the browser window to less than the size of the sketch!
 
@@ -94,9 +95,80 @@ Code for the above demo:
 [Range min:0 max:255 value:exampleVar /]
 ```
 
-You can also pass a `watchedVal` that triggers a reset whenever you click it
+# Ratio-based sizing
+
+You can pass a ratio to make the sketch a fixed ratio. By default, the width of the sketch is equal to the available space in the text, and height depends on that. If no width is defined, but a height is, width depends on height. If a width and height are defined, height is overridden to depend on width.
+
+[var name:"sketch_ratio" value:"
+  return function (p5) {
+    p5.setup = () => {
+      p5.noLoop();
+    };
+
+    p5.draw = () => {
+      p5.background(0);
+    };
+  }
+" /]
+
+[Sketch
+  ratio:`1/2`
+  sketchFunc:sketch_ratio /]
+
+[Sketch
+  ratio:`1/2`
+  width:"50%"
+  sketchFunc:sketch_ratio /]
+
+[Sketch
+  ratio:`1/2`
+  width:200
+  height:200
+  sketchFunc:sketch_ratio /]
+
+[Sketch
+  ratio:`1/2`
+  height:50
+  sketchFunc:sketch_ratio /]
+
+```
+[var name:"sketch_ratio" value:"
+  return function (p5) {
+    p5.setup = () => {
+      p5.noLoop();
+    };
+
+    p5.draw = () => {
+      p5.background(0);
+    };
+  }
+" /]
+
+[Sketch
+  ratio:`1/2`
+  sketchFunc:sketch_ratio /]
+
+[Sketch
+  ratio:`1/2`
+  width:"50%"
+  sketchFunc:sketch_ratio /]
+
+[Sketch
+  ratio:`1/2`
+  width:200
+  height:200
+  sketchFunc:sketch_ratio /]
+
+[Sketch
+  ratio:`1/2`
+  height:50
+  sketchFunc:sketch_ratio /]
+```
+
+# Manually triggered resets
+You can also pass a `watchedVal` to the sketch. It triggers a reset of he sketch whenever the value it watches is changed:
 [var name:"resetSketch" value:0 /]
-[var name:"sketch2" value:"
+[var name:"sketch_reset" value:"
   return function (p5) {
     let x = width/2, y = height/2, dx = 0;
 
@@ -118,12 +190,12 @@ You can also pass a `watchedVal` that triggers a reset whenever you click it
 [Sketch
   height:400
   watchedVal:resetSketch
-  sketchFunc:sketch2 /]
+  sketchFunc:sketch_reset /]
 [Button onClick:`resetSketch++`]Reset Sketch![/Button]
 
 ```
 [var name:"resetSketch" value:0 /]
-[var name:"sketch2" value:"
+[var name:"sketch_reset" value:"
   return function (p5) {
     let x = width/2, y = height/2, dx = 0;
 
@@ -145,7 +217,7 @@ You can also pass a `watchedVal` that triggers a reset whenever you click it
 [Sketch
   height:400
   watchedVal:resetSketch
-  sketchFunc:sketch2 /]
+  sketchFunc:sketch_reset /]
 [Button onClick:`resetSketch++`]Reset Sketch![/Button]
 
 ```

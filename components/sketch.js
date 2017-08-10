@@ -23,15 +23,22 @@ class SketchComponent extends IdyllComponent {
   // mounting view, that is: after CSS layouting is done.
   mountedContainer(div) {
     if (div) {
-      let { sketchFunc, sketchProps, noCanvas } = this.props;
-      const width = div.clientWidth | 0;
-      const height = div.clientHeight | 0;
-      let newState = { div, width, height };
+      let { sketchFunc, sketchProps, noCanvas, ratio } = this.props;
+      let width = div.clientWidth | 0;
+      let height = div.clientHeight | 0;
+      if (ratio) {
+        if (this.props.width || !this.props.height) {
+          height = (div.clientWidth * ratio) | 0;
+        } else {
+          width = (div.clientHeight / ratio) | 0;
+        }
+      }
+      let newState = { div, width, height, ratio };
 
       if (sketchFunc) {
-        sketchFunc = new Function('width', 'height', 'sketchProps', 'updates', sketchFunc);
+        sketchFunc = new Function('width', 'height', 'devicePixelRatio', 'sketchProps', 'updates', sketchFunc);
         const _sketch = (p5) => {
-          sketchFunc(width, height, sketchProps, this.updates)(p5);
+          sketchFunc(width, height, window.devicePixelRatio, sketchProps, this.updates)(p5);
 
           // handle creation of canvas
           const _setup = p5.setup || (() => { });
@@ -79,7 +86,7 @@ class SketchComponent extends IdyllComponent {
   render() {
     const { props } = this;
     let style = Object.assign({}, props.style);
-    let { width, height } = props;
+    let { width, height, ratio } = props;
     switch (typeof width) {
       case 'number':
         width = width | 0;
@@ -90,22 +97,27 @@ class SketchComponent extends IdyllComponent {
         style.width = width;
         break;
       case 'undefined':
-        style.width = style.width ? style.width : '100%';
+        style.width = style.width ? style.width :
+          ratio && (typeof height) === 'number' ? height / ratio : '100%';
       default:
     }
-    switch (typeof height) {
-      case 'number':
-        height = height | 0;
-        style['minHeight'] = height;
-        style['maxHeight'] = height;
-        break;
-      case 'string':
-        style.height = height;
-        break;
-      case 'undefined':
-        style.height = style.height ? style.height : '100%';
-        break;
-      default:
+    if (ratio && width) {
+      height = '100%';
+    } else {
+      switch (typeof height) {
+        case 'number':
+          height = height | 0;
+          style['minHeight'] = height;
+          style['maxHeight'] = height;
+          break;
+        case 'string':
+          style.height = height;
+          break;
+        case 'undefined':
+          style.height = style.height ? style.height : '100%';
+          break;
+        default:
+      }
     }
 
     style.margin = style.margin ? style.margin : '0 auto';
@@ -140,6 +152,7 @@ class Sketch extends Component {
           noCanvas={props.noCanvas}
           width={props.width}
           height={props.height}
+          ratio={props.ratio}
           style={props.style}
           className={props.className}
         />
