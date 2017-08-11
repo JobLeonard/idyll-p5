@@ -8,52 +8,49 @@
 
 Embed [p5js sketches](https://p5js.org/) (relatively) easily in idyll with this custom component! Source code for the component and this page [in this github repository](https://github.com/JobLeonard/idyll-p5)
 
-[Sketch webGL:1 ratio:1 sketch:`(p5) => {
-  p5.draw = () => {
-    const frame = p5.frameCount;
-    p5.background(250);
-    p5.rotateY(frame * 0.01);
+[Sketch webGL:1 ratio:1 draw:`(p5) => () => {
+  const frame = p5.frameCount;
+  p5.background(250);
+  p5.rotateY(frame * 0.01);
 
-    for(var j = 0; j < 5; j++){
+  for(var j = 0; j < 5; j++){
+    p5.push();
+    for(var i = 0; i < 80; i++){
+      p5.translate(
+        p5.sin(frame * 0.001 + j) * 100,
+        p5.sin(frame * 0.001 + j) * 100,
+        i * 0.1
+      );
+      p5.rotateZ(frame * 0.002);
       p5.push();
-      for(var i = 0; i < 80; i++){
-        p5.translate(
-          p5.sin(frame * 0.001 + j) * 100,
-          p5.sin(frame * 0.001 + j) * 100,
-          i * 0.1
-        );
-        p5.rotateZ(frame * 0.002);
-        p5.push();
-        p5.sphere(8, 6, 4);
-        p5.pop();
-      }
+      p5.sphere(8, 6, 4);
       p5.pop();
     }
+    p5.pop();
   }
 }` /]
 
 ```
-[Sketch webGL:1 ratio:1 sketch:`(p5) => {
-  p5.draw = () => {
-    const frame = p5.frameCount;
-    p5.background(250);
-    p5.rotateY(frame * 0.01);
 
-    for(var j = 0; j < 5; j++){
+[Sketch webGL:1 ratio:1 draw:`(p5) => () => {
+  const frame = p5.frameCount;
+  p5.background(250);
+  p5.rotateY(frame * 0.01);
+
+  for(var j = 0; j < 5; j++){
+    p5.push();
+    for(var i = 0; i < 80; i++){
+      p5.translate(
+        p5.sin(frame * 0.001 + j) * 100,
+        p5.sin(frame * 0.001 + j) * 100,
+        i * 0.1
+      );
+      p5.rotateZ(frame * 0.002);
       p5.push();
-      for(var i = 0; i < 80; i++){
-        p5.translate(
-          p5.sin(frame * 0.001 + j) * 100,
-          p5.sin(frame * 0.001 + j) * 100,
-          i * 0.1
-        );
-        p5.rotateZ(frame * 0.002);
-        p5.push();
-        p5.sphere(8, 6, 4);
-        p5.pop();
-      }
+      p5.sphere(8, 6, 4);
       p5.pop();
     }
+    p5.pop();
   }
 }` /]
 ```
@@ -62,7 +59,7 @@ Embed [p5js sketches](https://p5js.org/) (relatively) easily in idyll with this 
 
 To embed a sketch, we have to use [instance mode](https://github.com/processing/p5.js/wiki/Global-and-instance-mode). The code is passed as a string representing the *function body* of an instance mode sketch. So:
 
-```
+```js
 function sketch(p5){
   p5.setup = () => { /* setup code */  };
   p5.draw = () => { /* draw code */ };
@@ -73,13 +70,14 @@ function sketch(p5){
 Becomes:
 
 ```
-[Sketch sketch:`(p5, options) => {
-  p5.setup = () => {
+[Sketch
+  setup:`(p5, options) => () => {
     /* DO NOT USE createCanvas here! */
-  };
-  p5.draw = () => { /* draw code */ };
-  // etc.
-}` /]
+  }`
+  draw:`(p5, options) => () => {
+    /* draw code */
+  }`
+/]
 ```
 
 
@@ -95,43 +93,30 @@ Because this function body does not have access to the global browser scope, it 
 - `updates`, use this function to trigger an update to an Idyll variable
 
 ```
-[Sketch sketch:`(p5, { width, height }) => {
-  p5.setup = () => {
-    /* DO NOT USE createCanvas here! */
-  };
-  p5.draw = () => { /* draw code */ };
-  // etc.
-}` /]
+[Sketch draw:`(p5, { width, height }) => () => { /* draw code */ }` /]
 ```
 
-any variables that are defineed in the Idyll document are automatically in the scope of the sketch function. So 
-
+any variables that are defineed in the Idyll document are automatically in the scope of the sketch function. So
 
 ```
 [var name:"x" value:10 ]
-[Sketch sketch:`(p5, { width, height }) => {
-  p5.draw = () => { 
-    // you can reference x here
-    const xSquared = x * x;
-  };
+[Sketch draw:`(p5, { width, height }) => () => {
+  // you can reference x here
+  const xSquared = x * x;
 }` /]
 ```
 
 The sketch unmounts and resets in response to resize events to keep a correct size. To try this out, resize the browser window, or switch between portrain/landscape if you are on mobile.
 
-If the sketch needs to run specific code before unmounting the component, define a `p5.unmount` function. If will be triggered just before the component unmounts.
-
-[matt]Sorry, I temporarily broke this one.[/matt]
+If the sketch needs to run specific code before unmounting the component, define an `unmount` function. If will be triggered just before the component unmounts.
 
 [var name:"bgColor" value:5 /]
 [var name:"lineColor" value:250 /]
-[var name:"sketchDemo" value:`(p5, { width, height }) => {
-    let size = 25;
-    p5.setup = () => {
-      // no createCanvas required!
-    }
 
-    p5.draw = () => {
+[Sketch
+  draw:`(p5, { width, height }) => {
+    let size = 25;
+    return () => {
       p5.fill(bgColor, 16);
       p5.noStroke();
       p5.rect(0, 0, width, height);
@@ -140,15 +125,7 @@ If the sketch needs to run specific code before unmounting the component, define
       p5.strokeWeight(size);
       p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
     };
-
-    p5.unmount = () => {
-      console.log('The sketch was unmounted. Width was ' +
-      width + ', height was ' + height);
-    }
 }` /]
-
-[Sketch
-  sketch:sketchDemo /]
 
 Background Color: [Range min:0 max:255 value:bgColor /]
 Line Color: [Range min:0 max:255 value:lineColor /]
@@ -156,15 +133,14 @@ Line Color: [Range min:0 max:255 value:lineColor /]
 Code for the above demo:
 
 ```
+
 [var name:"bgColor" value:5 /]
 [var name:"lineColor" value:250 /]
-[var name:"sketchDemo" value:`(p5, { width, height }) => {
-    let size = 25;
-    p5.setup = () => {
-      // no createCanvas required!
-    }
 
-    p5.draw = () => {
+[Sketch
+  draw:`(p5, { width, height }) => {
+    let size = 25;
+    return () => {
       p5.fill(bgColor, 16);
       p5.noStroke();
       p5.rect(0, 0, width, height);
@@ -173,15 +149,7 @@ Code for the above demo:
       p5.strokeWeight(size);
       p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
     };
-
-    p5.unmount = () => {
-      console.log('The sketch was unmounted. Width was ' +
-      width + ', height was ' + height);
-    }
 }` /]
-
-[Sketch
-  sketch:sketchDemo /]
 
 Background Color: [Range min:0 max:255 value:bgColor /]
 Line Color: [Range min:0 max:255 value:lineColor /]
@@ -199,89 +167,92 @@ To enforce a ratio, you can pass a number to `ratio`, i.e. the expression ``` ra
 
  If no width is defined, but a height is, width depends on height (as you can see below, this part is still a bit buggy). If a ratio, width and height are defined, height is overridden to depend on width.
 
-[var name:"sketch_ratio" value:`(p5) => {
-  p5.setup = () => {
-    p5.noLoop();
-  };
-
-  p5.draw = () => {
-    p5.background(0);
-  };
-}` /]
+[var name:"sketch_ratio_setup" value:`(p5) => () => { p5.noLoop(); };`  /]
+[var name:"sketch_ratio_draw" value:`(p5) => () => { p5.background(0); }`  /]
 
 [Sketch
-  sketch:sketch_ratio /]
+  setup:sketch_ratio_setup
+  draw:sketch_ratio_draw /]
 
 [Sketch
   ratio:`4/1`
-  sketch:sketch_ratio /]
+  setup:sketch_ratio_setup
+  draw:sketch_ratio_draw /]
 
 [Sketch
   height:50
-  sketch:sketch_ratio /]
+  setup:sketch_ratio_setup
+  draw:sketch_ratio_draw /]
 
 [Sketch
   ratio:`2/1`
   width:"50%"
-  sketch:sketch_ratio /]
+  setup:sketch_ratio_setup
+  draw:sketch_ratio_draw /]
 
 [Sketch
   ratio:`2/1`
   width:200
   height:200
-  sketch:sketch_ratio /]
+  setup:sketch_ratio_setup
+  draw:sketch_ratio_draw /]
 
 [Sketch
   ratio:`2/1`
   height:50
-  sketch:sketch_ratio /]
+  setup:sketch_ratio_setup
+  draw:sketch_ratio_draw /]
 
 ```
-[var name:"sketch_ratio" value:`(p5) => {
-  p5.setup = () => {
-    p5.noLoop();
-  };
 
-  p5.draw = () => {
-    p5.background(0);
-  };
-}` /]
+[var name:"sketch_ratio_setup" value:`(p5) => () => { p5.noLoop(); };`  /]
+[var name:"sketch_ratio_draw" value:`(p5) => () => { p5.background(0); }`  /]
 
 [Sketch
-  sketch:sketch_ratio /]
+  setup:sketch_ratio_setup
+  draw:sketch_ratio_draw /]
 
 [Sketch
   ratio:`4/1`
-  sketch:sketch_ratio /]
+  setup:sketch_ratio_setup
+  draw:sketch_ratio_draw /]
 
 [Sketch
   height:50
-  sketch:sketch_ratio /]
+  setup:sketch_ratio_setup
+  draw:sketch_ratio_draw /]
 
 [Sketch
   ratio:`2/1`
   width:"50%"
-  sketch:sketch_ratio /]
+  setup:sketch_ratio_setup
+  draw:sketch_ratio_draw /]
 
 [Sketch
   ratio:`2/1`
   width:200
   height:200
-  sketch:sketch_ratio /]
+  setup:sketch_ratio_setup
+  draw:sketch_ratio_draw /]
 
 [Sketch
   ratio:`2/1`
   height:50
-  sketch:sketch_ratio /]
+  setup:sketch_ratio_setup
+  draw:sketch_ratio_draw /]
 ```
 
 # Manually triggered resets
 A `watchedVal` triggers a reset of the sketch whenever the value it watches is changed:
 [var name:"resetSketch" value:0 /]
-[var name:"sketch_reset" value:`(p5, {width, height}) => {
+
+[Sketch
+  height:100
+  watchedVal:resetSketch
+  draw:`(p5, {width, height}) => {
   let x = width/2, y = height/2, dx = 0;
 
-  p5.draw = () => {
+  return () => {
     p5.fill(0, 4);
     p5.noStroke();
     p5.rect(0, 0, width, height);
@@ -294,19 +265,18 @@ A `watchedVal` triggers a reset of the sketch whenever the value it watches is c
     dx++;
   };
  }` /]
-
-[Sketch
-  height:100
-  watchedVal:resetSketch
-  sketch:sketch_reset /]
 [Button onClick:`resetSketch++`]Reset Sketch![/Button]
 
 ```
 [var name:"resetSketch" value:0 /]
-[var name:"sketch_reset" value:`(p5, {width, height}) => {
+
+[Sketch
+  height:100
+  watchedVal:resetSketch
+  draw:`(p5, {width, height}) => {
   let x = width/2, y = height/2, dx = 0;
 
-  p5.draw = () => {
+  return () => {
     p5.fill(0, 4);
     p5.noStroke();
     p5.rect(0, 0, width, height);
@@ -319,11 +289,5 @@ A `watchedVal` triggers a reset of the sketch whenever the value it watches is c
     dx++;
   };
  }` /]
-
-[Sketch
-  height:100
-  watchedVal:resetSketch
-  sketch:sketch_reset /]
 [Button onClick:`resetSketch++`]Reset Sketch![/Button]
-
 ```

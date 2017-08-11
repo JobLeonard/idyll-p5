@@ -22,7 +22,8 @@ class SketchComponent extends IdyllComponent {
   mountedContainer(div) {
     const p5 = require('p5');
     if (div) {
-      let { sketch, sketchProps, webGL, noCanvas, ratio, updateProps } = this.props;
+      this.div = div;
+      let { setup, draw, sketchProps, webGL, noCanvas, ratio, updateProps } = this.props;
       let width = div.clientWidth | 0;
       let height = div.clientHeight | 0;
       if (ratio) {
@@ -36,10 +37,17 @@ class SketchComponent extends IdyllComponent {
         height = (div.clientWidth * 0.5) | 0;
       }
       let newState = { div, width, height, ratio };
-
-      if (sketch) {
+      if (setup || draw) {
         const _sketch = (p5) => {
-          sketch(p5, { width, height, devicePixelRatio: window.devicePixelRatio, updates: updateProps});
+          this.p5 = p5;
+          if (setup) {
+            p5.setup = setup(p5, { width, height, devicePixelRatio: window.devicePixelRatio, updates: updateProps});
+          }
+          if (draw) {
+            console.log(draw);
+            p5.draw = draw(p5, { width, height, devicePixelRatio: window.devicePixelRatio, updates: updateProps});
+            console.log(p5.draw);
+          }
 
           // handle creation of canvas
           const _setup = p5.setup || (() => { });
@@ -71,10 +79,18 @@ class SketchComponent extends IdyllComponent {
 
   componentWillReceiveProps(nextProps) {
     // pass relevant props to sketch
-    const { sketch } = this.state;
-    if (sketch.receiveProps && nextProps.sketchProps) {
-      sketch.receiveProps(nextProps.sketchProps);
+    const { sketch, width, height } = this.state;
+    // if (sketch.receiveProps && nextProps.sketchProps) {
+    //   sketch.receiveProps(nextProps.sketchProps);
+    // }
+    let { sketchProps, draw, setup, webGL, noCanvas, ratio, updateProps } = nextProps;
+
+    if (draw) {
+      sketch.draw = draw(sketch, { width, height, devicePixelRatio: window.devicePixelRatio, updates: updateProps});
     }
+    // this.setState({
+    //   sketch: new this.p5(_sketch, this.div)
+    // })
   }
 
   componentWillUnmount() {
@@ -145,15 +161,7 @@ class Sketch extends Component {
         watchedVal={props.watchedVal}
       >
         <SketchComponent
-          sketch={props.sketch}
-          sketchProps={props.sketchProps}
-          webGL={props.webGL}
-          noCanvas={props.noCanvas}
-          width={props.width}
-          height={props.height}
-          ratio={props.ratio}
-          style={props.style}
-          className={props.className}
+          {...props}
           updateProps={this.updateProps}
         />
       </RemountOnResize>
