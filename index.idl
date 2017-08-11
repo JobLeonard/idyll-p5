@@ -90,7 +90,6 @@ There are a few more subtle differences with regular p5 code, and a few added co
 Because this function body does not have access to the global browser scope, it is passed variables via the options parameter to make life  little easier:
 
 - `width` and `height`, which work like the normal p5 width/height. Note that this means you can use them before `setup()`. See _"Size and ratio"_ below
-- `sketchProps`, which can be used to pass idyll variables to the sketch. To listen to changes in these props, define a `p5.receiveProps(sketchProps)` function.
 - `devicePixelRatio`, which matches `window.devicePixelRatio`. Useful in case you want to respond to zoom- or high density display-related effect on the pixels.
 - `updates`, use this function to trigger an update to an Idyll variable
 
@@ -139,10 +138,6 @@ If the sketch needs to run specific code before unmounting the component, define
       p5.strokeWeight(size);
       p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
     };
-
-    p5.mouseClicked = () => {
-      updateProps({ bgColor: 255 - bgColor })
-    }
 
     p5.unmount = () => {
       console.log('The sketch was unmounted. Width was ' +

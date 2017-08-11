@@ -74,7 +74,7 @@ class SketchComponent extends IdyllComponent {
   componentWillReceiveProps(nextProps) {
     // pass relevant props to sketch
     const { sketch, width, height } = this.state;
-    let { sketchProps, webGL, noCanvas, ratio, updateProps } = nextProps;
+    let { webGL, noCanvas, ratio, updateProps } = nextProps;
     nextProps.sketch(sketch, { width, height, devicePixelRatio: window.devicePixelRatio, updateProps: updateProps});
   }
 
@@ -146,15 +146,7 @@ class Sketch extends Component {
         watchedVal={props.watchedVal}
       >
         <SketchComponent
-          sketch={props.sketch}
-          sketchProps={props.sketchProps}
-          webGL={props.webGL}
-          noCanvas={props.noCanvas}
-          width={props.width}
-          height={props.height}
-          ratio={props.ratio}
-          style={props.style}
-          className={props.className}
+          {...props}
           updateProps={this.updateProps}
         />
       </RemountOnResize>
