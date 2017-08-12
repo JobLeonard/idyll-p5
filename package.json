@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "idyll index.idl --defaultComponents ./components/default --layout centered --css styles.css --theme github --watch",
-    "build": "idyll index.idl --defaultComponents ./components/default --layout centered --theme github --css styles.css;",
+    "build": "idyll -n index.idl --defaultComponents ./components/default --layout centered --theme github --css styles.css;",
     "deploy": "npm run build && gh-pages -d ./build"
   },
   "dependencies": {
