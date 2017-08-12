@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import IdyllComponent from 'idyll-component';
 import { RemountOnResize } from './remount';
 
@@ -136,7 +136,7 @@ class SketchComponent extends IdyllComponent {
 }
 
 
-class Sketch extends Component {
+class Sketch extends IdyllComponent {
   render() {
     const { props } = this;
     return (
