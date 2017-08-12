@@ -245,6 +245,77 @@ Sketch component. I think this is something that should be updated in Idyll.
 
 ```
 
+[job]
+I added a sketch that shows some issues with the current approach
+[/job]
+
+[var name:"clickBgColor2" value:0 /]
+[var name:"clickLineColor2" value:255 /]
+[Sketch
+  clickBgColor2:clickBgColor2
+  clickLineColor2:clickLineColor2
+  ratio:`4/1`
+  sketch:`(p5, { width, height, updateProps }) => {
+    // because this sketch is derived each time,
+    // frame is reset each time. This is not
+    // expected behaviour (from p5 users POV).
+    let frame = 0;
+    p5.draw = () => {
+      p5.noStroke();
+      p5.fill(clickBgColor, 16);
+      p5.rect(0, 0, width, height);
+      p5.fill(clickLineColor);
+      let size = 300 - 300*p5.cos(frame * p5.PI / 240);
+      p5.ellipse(width/2, height/2, size, size);
+      frame++;
+    };
+
+    p5.mouseClicked = () => {
+      // could not use clickBgColor and clickLineColor
+      // without breaking both sketches. Is this
+      // expected behaviour?
+      updateProps({
+        clickBgColor2: 255 - clickBgColor2,
+        clickLineColor2: 255 - clickLineColor2
+      });
+    }
+}` /]
+
+```
+
+[var name:"clickBgColor2" value:0 /]
+[var name:"clickLineColor2" value:255 /]
+[Sketch
+  clickBgColor2:clickBgColor2
+  clickLineColor2:clickLineColor2
+  ratio:`4/1`
+  sketch:`(p5, { width, height, updateProps }) => {
+    // because this sketch is derived each time,
+    // frame is reset each time. This is not
+    // expected behaviour (from p5 users POV).
+    let frame = 0;
+    p5.draw = () => {
+      p5.noStroke();
+      p5.fill(clickBgColor, 16);
+      p5.rect(0, 0, width, height);
+      p5.fill(clickLineColor);
+      let size = 300 - 300*p5.cos(frame * p5.PI / 240);
+      p5.ellipse(width/2, height/2, size, size);
+      frame++;
+    };
+
+    p5.mouseClicked = () => {
+      // could not use clickBgColor and clickLineColor
+      // without breaking both sketches. Is this
+      // expected behaviour?
+      updateProps({
+        clickBgColor2: 255 - clickBgColor2,
+        clickLineColor2: 255 - clickLineColor2
+      });
+    }
+}` /]
+
+```
 
 # Sketch size and ratio
 
