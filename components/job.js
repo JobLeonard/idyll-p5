@@ -5,10 +5,10 @@ class Job extends IdyllComponent {
   render() {
     return (
       <span style={{ color: 'green', fontStyle: 'italic'}}>
-        [mathisonian note]: {this.props.children}
+        [jobleonard note]: {this.props.children}
       </span>
     );
   }
 }
 
-module.exports = Matt;
+module.exports = Job;
