@@ -133,7 +133,7 @@ If the sketch needs to run specific code before unmounting the component, define
       p5.fill(bgColor, 16);
       p5.noStroke();
       p5.rect(0, 0, width, height);
-      size = 40 + 10*p5.sin(p5.frameCount * p5.PI / 60);
+      size = 40 + 10*p5.sin(p5.frameCount * p5.TAU / 60);
       p5.stroke(lineColor);
       p5.strokeWeight(size);
       p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
@@ -169,7 +169,7 @@ Code for the above demo:
       p5.fill(bgColor, 16);
       p5.noStroke();
       p5.rect(0, 0, width, height);
-      size = 40 + 10*p5.sin(p5.frameCount * p5.PI / 60);
+      size = 40 + 10*p5.sin(p5.frameCount * p5.TAU / 60);
       p5.stroke(lineColor);
       p5.strokeWeight(size);
       p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
@@ -194,7 +194,7 @@ want Idyll to be able to modify it. Thats why `clickBgColor` and `clickLineColor
 Sketch component. I think this is something that should be updated in Idyll.
 [/matt]
 [job]
-I added a sketch that shows some issues with the current approach
+I added a sketch that shows some issues with the current approach. The main issue is that derived variables reset the sketch.
 [/job]
 
 [var name:"clickBgColor" value:0 /]
@@ -211,7 +211,7 @@ I added a sketch that shows some issues with the current approach
       p5.noStroke();
       p5.rect(0, 0, width, height);
       p5.fill((128+clickLineColor)/2);
-      let size = 300 - 300*p5.cos(p5.frameCount * p5.PI / 240);
+      let size = 300 - 300*p5.cos(p5.frameCount * p5.TAU / 240);
       p5.ellipse(width/2, height/2, size, size);
     };
 
@@ -238,8 +238,8 @@ I added a sketch that shows some issues with the current approach
       p5.rect(0, 0, width, height);
 
       p5.fill(clickLineColor);
-      let size = 300 - 300*p5.cos(frame * p5.PI / 240);
-      p5.ellips
+      let size = 300 - 300*p5.cos(frame * p5.TAU / 240);
+      p5.ellipse(width/2, height/2, size, size);
       frame++;
     };
 
@@ -249,66 +249,6 @@ I added a sketch that shows some issues with the current approach
       });
     }
 }` /]
-
-[var
-  name:"mouseSketch"
-  value:`(p5, { width, height, updateProps }) => {
-    let clickedX = 0, clickedY = 0;
-    let pressedX = 0, pressedY = 0;
-    let releasedX = 0, releasedY = 0;
-    let movedX = 0, movedY = 0;
-    let draggedX = 0, draggedY = 0;
-    let wheelVal = 0;
-    p5.draw = () => {
-      p5.background(0);
-      p5.noStroke();
-      p5.textSize(16);
-      p5.fill(0, 0, 255);
-      p5.text('clicked: ' + clickedX + ', ' + clickedY, 32, 20);
-      p5.fill(255, 255, 0);
-      p5.text('pressed: ' + pressedX + ', ' + pressedX, 32, 40);
-      p5.fill(255, 0, 255);
-      p5.text('released: ' + releasedX + ', ' + releasedY, 32, 60);
-      p5.fill(0, 255, 0);
-      p5.text('moved: ' + movedX + ', ' + movedY, 32, 80);
-      p5.fill(255, 0, 0);
-      p5.text('dragged: ' + draggedX + ', ' + draggedY, 32, 100);
-      p5.fill(0, 255, 255);
-      p5.text('wheel: ' + wheelVal, 32, 120);
-    };
-
-    p5.mouseClicked = () => {
-      clickedX = p5.mouseX;
-      clickedY = p5.mouseY;
-    }
-    p5.mousePressed = () => {
-      pressedX = p5.mouseX;
-      pressedY = p5.mouseY;
-    }
-    p5.mouseReleased = () => {
-      releasedX = p5.mouseX;
-      releasedY = p5.mouseY;
-    }
-    p5.mouseMoved = () => {
-      movedX = p5.mouseX;
-      movedY = p5.mouseY;
-    }
-    p5.mouseDragged = () => {
-      draggedX = p5.mouseX;
-      draggedY = p5.mouseY;
-    }
-    p5.mouseWheel = (event) => {
-      wheelVal += event.delta;
-      // prevent scrolling when
-      // mouse is on sketch
-      return false;
-    }
-
-}` /]
-
-[Sketch
-  ratio:`4/1`
-  sketch:mouseSketch /]
 
 ```
 [var name:"clickBgColor" value:0 /]
@@ -325,7 +265,7 @@ I added a sketch that shows some issues with the current approach
       p5.noStroke();
       p5.rect(0, 0, width, height);
       p5.fill((128+clickLineColor)/2);
-      let size = 300 - 300*p5.cos(p5.frameCount * p5.PI / 240);
+      let size = 300 - 300*p5.cos(p5.frameCount * p5.TAU / 240);
       p5.ellipse(width/2, height/2, size, size);
     };
 
@@ -352,7 +292,7 @@ I added a sketch that shows some issues with the current approach
       p5.rect(0, 0, width, height);
 
       p5.fill(clickLineColor);
-      let size = 300 - 300*p5.cos(frame * p5.PI / 240);
+      let size = 300 - 300*p5.cos(frame * p5.TAU / 240);
       p5.ellips
       frame++;
     };
@@ -363,6 +303,78 @@ I added a sketch that shows some issues with the current approach
       });
     }
 }` /]
+
+```
+
+[job]
+A few demos of the new and improved mouse and keyboard listening events.
+[/job]
+[var
+  name:"mouseSketch"
+  value:`(p5, { width, height, updateProps }) => {
+    let clickedX = 0, clickedY = 0;
+    let pressedX = 0, pressedY = 0;
+    let releasedX = 0, releasedY = 0;
+    let movedX = 0, movedY = 0;
+    let draggedX = 0, draggedY = 0;
+    let wheelVal = 0;
+    p5.draw = () => {
+      p5.background(0);
+      p5.noStroke();
+      p5.textSize(16);
+      p5.fill(0, 0, 255);
+      p5.text('clicked: ' + clickedX + ', ' + clickedY, 32, 20);
+      p5.fill(255, 255, 0);
+      p5.text('pressed: ' + pressedX + ', ' + pressedX, 32, 40);
+      p5.fill(255, 0, 255);
+      p5.text('released: ' + releasedX + ', ' + releasedY, 32, 60);
+      p5.fill(0, 255, 0);
+      p5.text('moved: ' + movedX + ', ' + movedY, 32, 80);
+      p5.fill(255, 0, 0);
+      p5.text('dragged: ' + draggedX + ', ' + draggedY, 32, 100);
+      p5.fill(0, 255, 255);
+      p5.text('wheel: ' + wheelVal, 32, 120);
+    };
+
+    p5.mouseClicked = () => {
+      clickedX = p5.mouseX;
+      clickedY = p5.mouseY;
+    }
+    p5.mousePressed = () => {
+      pressedX = p5.mouseX;
+      pressedY = p5.mouseY;
+    }
+    p5.mouseReleased = () => {
+      releasedX = p5.mouseX;
+      releasedY = p5.mouseY;
+    }
+    p5.mouseMoved = () => {
+      movedX = p5.mouseX;
+      movedY = p5.mouseY;
+    }
+    p5.mouseDragged = () => {
+      draggedX = p5.mouseX;
+      draggedY = p5.mouseY;
+    }
+    p5.mouseWheel = (event) => {
+      wheelVal += event.delta;
+      // prevent scrolling when
+      // mouse is on sketch
+      // return false;
+    }
+
+}` /]
+
+[Sketch
+  ratio:`4/1`
+  sketch:mouseSketch /]
+
+[Sketch
+  ratio:`4/1`
+  alwaysListen:1
+  sketch:mouseSketch /]
+
+```
 
 [var
   name:"mouseSketch"
@@ -415,7 +427,7 @@ I added a sketch that shows some issues with the current approach
       wheelVal += event.delta;
       // prevent scrolling when
       // mouse is on sketch
-      return false;
+      // return false;
     }
 
 }` /]
@@ -423,6 +435,96 @@ I added a sketch that shows some issues with the current approach
 [Sketch
   ratio:`4/1`
   sketch:mouseSketch /]
+
+[Sketch
+  ratio:`4/1`
+  alwaysListen:1
+  sketch:mouseSketch /]
+
+```
+
+[var
+  name:"keySketch"
+  value:`(p5, { width, height, updateProps }) => {
+    let _keyPressed = '';
+    let _keyReleased = '';
+    let _keyTyped = '';
+
+    p5.draw = () => {
+      p5.background(0);
+      p5.fill(255);
+      p5.textSize(16);
+      p5.text('keyPressed: ' + _keyPressed, 20, 20);
+      p5.text('keyReleased: ' + _keyReleased, 20, 40);
+      p5.text('keyTyped: ' + _keyTyped, 20, 60);
+    };
+
+    p5.keyPressed = () => {
+      _keyPressed += p5.key;
+    };
+
+    p5.keyReleased = () => {
+      _keyReleased += p5.key;
+    };
+
+    p5.keyTyped = () => {
+      _keyTyped += p5.key;
+    };
+
+} ` /]
+
+
+[Sketch
+  ratio:`4/1`
+  sketch:keySketch /]
+
+[Sketch
+  ratio:`4/1`
+  alwaysListen:1
+  sketch:keySketch /]
+
+```
+
+[var
+  name:"keySketch"
+  value:`(p5, { width, height, updateProps }) => {
+    let _keyPressed = '';
+    let _keyReleased = '';
+    let _keyTyped = '';
+
+    p5.draw = () => {
+      p5.background(0);
+      p5.fill(255);
+      p5.textSize(16);
+      p5.text('keyPressed: ' + _keyPressed, 20, 20);
+      p5.text('keyReleased: ' + _keyReleased, 20, 40);
+      p5.text('keyTyped: ' + _keyTyped, 20, 60);
+    };
+
+    p5.keyPressed = () => {
+      _keyPressed += p5.key;
+    };
+
+    p5.keyReleased = () => {
+      _keyReleased += p5.key;
+    };
+
+    p5.keyTyped = () => {
+      _keyTyped += p5.key;
+    };
+
+} ` /]
+
+
+[Sketch
+  ratio:`4/1`
+  sketch:keySketch /]
+
+[Sketch
+  ratio:`4/1`
+  alwaysListen:1
+  sketch:keySketch /]
+
 ```
 
 # Sketch size and ratio

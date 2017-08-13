@@ -24,7 +24,15 @@ class SketchComponent extends IdyllComponent {
     this.p5 = p5;
     if (div) {
       this.div = div;
-      let { sketch, sketchProps, noCanvas, webGL, ratio, updateProps } = this.props;
+      let {
+        sketch,
+        sketchProps,
+        noCanvas,
+        webGL,
+        alwaysListen,
+        ratio,
+        updateProps,
+      } = this.props;
       let width = div.clientWidth | 0;
       let height = div.clientHeight | 0;
       if (ratio) {
@@ -39,14 +47,22 @@ class SketchComponent extends IdyllComponent {
       }
       let newState = { div, width, height, ratio, noCanvas, webGL };
       if (sketch) {
-        const _sketch = this.wrapSketch(sketch, width, height, updateProps, noCanvas, webGL);
+        const _sketch = this.wrapSketch(sketch, width, height, updateProps, noCanvas, webGL, alwaysListen);
         newState.sketch = new p5(_sketch, div);
       }
       this.setState(newState);
     }
   }
 
-  wrapSketch(sketch, width, height, updateProps, noCanvas, webGL) {
+  // We need to handle a number of things:
+  // - canvas size is handled by the component, so
+  //   we have to wrap setup()
+  // - clearing the sketch when unmounting, and allowing
+  //   for custom handlers for that
+  // - ensuring that mouse, keyboard and touch events
+  //   only trigger when the sketch has "focus" (this is
+  //   not actual DOM focus, we need to use our own logic)
+  wrapSketch(sketch, width, height, updateProps, noCanvas, webGL, alwaysListen) {
     return (p5) => {
       sketch(p5, { width, height, devicePixelRatio: window.devicePixelRatio, updateProps: updateProps });
 
@@ -68,6 +84,7 @@ class SketchComponent extends IdyllComponent {
 
       // Handle focus of mouse events
       const isInCanvas = () => (
+        alwaysListen ||
         p5.mouseX < width && p5.mouseX >= 0 &&
         p5.mouseY < height && p5.mouseY >= 0
       );
@@ -78,45 +95,41 @@ class SketchComponent extends IdyllComponent {
             p5[eventName] = noop;
           })
       } else {
-        let hasFocus = false, pseudoFocus = false;
+        let hasFocus = alwaysListen, pseudoFocus = alwaysListen;
         const _mouseClicked = p5.mouseClicked;
-        if (_mouseClicked) {
-          p5.mouseClicked = () => {
-            if (pseudoFocus) {
-              hasFocus = isInCanvas();
-              if (hasFocus) {
-                _mouseClicked();
-              }
+        p5.mouseClicked = (event) => {
+          if (pseudoFocus || alwaysListen) {
+            hasFocus = isInCanvas();
+            if (hasFocus && _mouseClicked) {
+              return _mouseClicked(event);
             }
           };
         }
 
         const _mousePressed = p5.mousePressed;
-        if (_mousePressed) {
-          p5.mousePressed = () => {
-            pseudoFocus = isInCanvas();
-            if (pseudoFocus) {
-              _mousePressed();
-            }
+        p5.mousePressed = (event) => {
+          pseudoFocus = isInCanvas();
+          if (pseudoFocus && _mousePressed) {
+            return _mousePressed(event);
           }
         }
 
         const _mouseDragged = p5.mouseDragged;
         if (_mouseDragged) {
-          p5.mouseDragged = () => {
+          p5.mouseDragged = (event) => {
             if (hasFocus || pseudoFocus) {
-              _mouseDragged();
+              return _mouseDragged(event);
             }
           }
         }
 
         const _mouseReleased = p5.mouseReleased;
-        if (_mouseReleased) {
-          p5.mouseReleased = () => {
-            if (hasFocus || pseudoFocus) {
-              _mouseReleased();
-              hasFocus = isInCanvas();
-              pseudoFocus = hasFocus;
+        p5.mouseReleased = (event) => {
+          if (hasFocus || pseudoFocus) {
+            hasFocus = isInCanvas();
+            pseudoFocus = hasFocus;
+            if (_mouseReleased) {
+              return _mouseReleased(event);
             }
           }
         }
@@ -126,6 +139,17 @@ class SketchComponent extends IdyllComponent {
           if (eventHandler) {
             p5[eventName] = (event) => {
               if (isInCanvas()) {
+                return eventHandler(event);
+              }
+            }
+          }
+        });
+
+        ['keyPressed', 'keyReleased', 'keyTyped'].map((eventName) => {
+          const eventHandler = p5[eventName];
+          if (eventHandler) {
+            p5[eventName] = (event) => {
+              if (hasFocus || alwaysListen) {
                 return eventHandler(event);
               }
             }
