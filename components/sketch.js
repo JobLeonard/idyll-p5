@@ -72,48 +72,61 @@ class SketchComponent extends IdyllComponent {
         p5.mouseY < height && p5.mouseY >= 0
       );
 
-      let hasFocus = false;
-      const mouseEventTestFocus = ['mouseClicked'];
-      const mouseEventInCanvas = ['mouseMoved', 'mousePressed','mouseWheel'];
-      // when on canvas, or when previously focused (you can move the
-      // mouse off the canvas while dragging)
-      const mouseEventWhenFocused = ['mouseDragged', 'mouseReleased'];
-
       if (noCanvas) {
-        mouseEventInCanvas.map((eventName) => { p5[eventName] = noop; });
-        mouseEventTestFocus.map((eventName) => { p5[eventName] = noop; });
-        mouseEventWhenFocused.map((eventName) => { p5[eventName] = noop; });
+        ['mouseClicked', 'mousePressed', 'mouseReleased',
+          'mouseMoved', 'mouseDragged', 'mouseWheel'].map((eventName) => {
+            p5[eventName] = noop;
+          })
       } else {
-
-        mouseEventTestFocus.map((eventName) => {
-          const eventHandler = p5[eventName];
-          if (eventHandler) {
-            p5[eventName] = () => {
+        let hasFocus = false, pseudoFocus = false;
+        const _mouseClicked = p5.mouseClicked;
+        if (_mouseClicked) {
+          p5.mouseClicked = () => {
+            if (pseudoFocus) {
               hasFocus = isInCanvas();
               if (hasFocus) {
-                eventHandler();
+                _mouseClicked();
               }
             }
-          }
-        });
+          };
+        }
 
-        mouseEventInCanvas.map((eventName) => {
+        const _mousePressed = p5.mousePressed;
+        if (_mousePressed) {
+          p5.mousePressed = () => {
+            pseudoFocus = isInCanvas();
+            if (pseudoFocus) {
+              _mousePressed();
+            }
+          }
+        }
+
+        const _mouseDragged = p5.mouseDragged;
+        if (_mouseDragged) {
+          p5.mouseDragged = () => {
+            if (hasFocus || pseudoFocus) {
+              _mouseDragged();
+            }
+          }
+        }
+
+        const _mouseReleased = p5.mouseReleased;
+        if (_mouseReleased) {
+          p5.mouseReleased = () => {
+            if (hasFocus || pseudoFocus) {
+              _mouseReleased();
+              hasFocus = isInCanvas();
+              pseudoFocus = hasFocus;
+            }
+          }
+        }
+
+        ['mouseMoved', 'mouseWheel'].map((eventName) => {
           const eventHandler = p5[eventName];
           if (eventHandler) {
-            p5[eventName] = () => {
+            p5[eventName] = (event) => {
               if (isInCanvas()) {
-                eventHandler();
-              }
-            }
-          }
-        });
-
-        mouseEventWhenFocused.map((eventName) => {
-          const eventHandler = p5[eventName];
-          if (eventHandler) {
-            p5[eventName] = () => {
-              if (hasFocus || isInCanvas()) {
-                eventHandler();
+                return eventHandler(event);
               }
             }
           }
