@@ -250,7 +250,9 @@ I added a sketch that shows some issues with the current approach
     }
 }` /]
 
-[var name:"mouseSketch" value:`(p5, { width, height, updateProps }) => {
+[var
+  name:"mouseSketch"
+  value:`(p5, { width, height, updateProps }) => {
     let clickedX = 0, clickedY = 0;
     let pressedX = 0, pressedY = 0;
     let releasedX = 0, releasedY = 0;
@@ -362,7 +364,9 @@ I added a sketch that shows some issues with the current approach
     }
 }` /]
 
-[var name:"mouseSketch" value:`(p5, { width, height, updateProps }) => {
+[var
+  name:"mouseSketch"
+  value:`(p5, { width, height, updateProps }) => {
     let clickedX = 0, clickedY = 0;
     let pressedX = 0, pressedY = 0;
     let releasedX = 0, releasedY = 0;
