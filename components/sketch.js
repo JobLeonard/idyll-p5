@@ -24,7 +24,7 @@ class SketchComponent extends IdyllComponent {
     this.p5 = p5;
     if (div) {
       this.div = div;
-      let { sketch, sketchProps, webGL, noCanvas, ratio, updateProps } = this.props;
+      let { sketch, sketchProps, noCanvas, webGL, ratio, updateProps } = this.props;
       let width = div.clientWidth | 0;
       let height = div.clientHeight | 0;
       if (ratio) {
@@ -33,41 +33,92 @@ class SketchComponent extends IdyllComponent {
         } else {
           width = (div.clientHeight * ratio) | 0;
         }
-      } else if (!this.props.width && !this.props.height){
+      } else if (!this.props.width && !this.props.height) {
         // default to 2:1 ratio
         height = (div.clientWidth * 0.5) | 0;
       }
-      let newState = { div, width, height, ratio };
-
+      let newState = { div, width, height, ratio, noCanvas, webGL };
       if (sketch) {
-        const _sketch = (p5) => {
-          sketch(p5, { width, height, devicePixelRatio: window.devicePixelRatio, updateProps: updateProps});
-
-          // handle creation of canvas
-          const _setup = p5.setup || (() => { });
-          if (noCanvas) {
-            p5.setup = () => {
-              p5.noCanvas();
-              _setup();
-            };
-          } else {
-            p5.setup = () => {
-              p5.createCanvas(width, height, webGL? p5.WEBGL : p5.P2D);
-            };
-          }
-
-          // handle removing the sketch if the component unmounts
-          const _unmount = p5.unmount;
-          p5.unmount = () => {
-            if (_unmount) {
-              _unmount();
-            }
-            p5.remove();
-          }
-        }
+        const _sketch = this.wrapSketch(sketch, width, height, updateProps, noCanvas, webGL);
         newState.sketch = new p5(_sketch, div);
       }
       this.setState(newState);
+    }
+  }
+
+  wrapSketch(sketch, width, height, updateProps, noCanvas, webGL) {
+    return (p5) => {
+      sketch(p5, { width, height, devicePixelRatio: window.devicePixelRatio, updateProps: updateProps });
+
+      const noop = (() => { });
+      // handle creation of canvas
+      const _setup = p5.setup || noop;
+      p5.setup = () => {
+        noCanvas ? p5.noCanvas() :
+          p5.createCanvas(width, height, webGL ? p5.WEBGL : p5.P2D);
+        _setup();
+      };
+
+      // handle removing the sketch if the component unmounts
+      const _unmount = p5.unmount || noop;
+      p5.unmount = () => {
+        _unmount();
+        p5.remove();
+      }
+
+      // Handle focus of mouse events
+      const isInCanvas = () => (
+        p5.mouseX < width && p5.mouseX >= 0 &&
+        p5.mouseY < height && p5.mouseY >= 0
+      );
+
+      let hasFocus = false;
+      const mouseEventTestFocus = ['mouseClicked'];
+      const mouseEventInCanvas = ['mouseMoved', 'mousePressed','mouseWheel'];
+      // when on canvas, or when previously focused (you can move the
+      // mouse off the canvas while dragging)
+      const mouseEventWhenFocused = ['mouseDragged', 'mouseReleased'];
+
+      if (noCanvas) {
+        mouseEventInCanvas.map((eventName) => { p5[eventName] = noop; });
+        mouseEventTestFocus.map((eventName) => { p5[eventName] = noop; });
+        mouseEventWhenFocused.map((eventName) => { p5[eventName] = noop; });
+      } else {
+
+        mouseEventTestFocus.map((eventName) => {
+          const eventHandler = p5[eventName];
+          if (eventHandler) {
+            p5[eventName] = () => {
+              hasFocus = isInCanvas();
+              if (hasFocus) {
+                eventHandler();
+              }
+            }
+          }
+        });
+
+        mouseEventInCanvas.map((eventName) => {
+          const eventHandler = p5[eventName];
+          if (eventHandler) {
+            p5[eventName] = () => {
+              if (isInCanvas()) {
+                eventHandler();
+              }
+            }
+          }
+        });
+
+        mouseEventWhenFocused.map((eventName) => {
+          const eventHandler = p5[eventName];
+          if (eventHandler) {
+            p5[eventName] = () => {
+              if (hasFocus || isInCanvas()) {
+                eventHandler();
+              }
+            }
+          }
+        });
+      }
     }
   }
 
@@ -75,7 +126,7 @@ class SketchComponent extends IdyllComponent {
     // pass relevant props to sketch
     const { sketch, width, height } = this.state;
     let { webGL, noCanvas, ratio, updateProps } = nextProps;
-    nextProps.sketch(sketch, { width, height, devicePixelRatio: window.devicePixelRatio, updateProps: updateProps});
+    this.wrapSketch(nextProps.sketch, width, height, updateProps, noCanvas, webGL)(sketch);
   }
 
   componentWillUnmount() {
@@ -137,13 +188,28 @@ class SketchComponent extends IdyllComponent {
 
 
 class Sketch extends IdyllComponent {
+  constructor(props) {
+    super(props);
+    this.state = { watchedVal: 0 };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    // we should also remount if the width, height or ratio
+    // props changes, so we add those to watchedVal
+    if (this.props.watchedVal !== nextProps.watchedVal ||
+      this.props.width !== nextProps.width ||
+      this.props.height !== nextProps.height ||
+      this.props.ratio !== nextProps.ratio) {
+      this.setState({ watchedVal: (this.state.watchedVal + 1) & 0xFFFFFFFF })
+    }
+  }
   render() {
     const { props } = this;
     return (
       <RemountOnResize
         /* Since canvas interferes with CSS layouting,
         we unmount and remount it on resize events */
-        watchedVal={props.watchedVal}
+        watchedVal={this.state.watchedVal}
       >
         <SketchComponent
           {...props}
