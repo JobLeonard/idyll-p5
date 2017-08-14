@@ -145,6 +145,33 @@ class SketchComponent extends IdyllComponent {
           }
         });
 
+        const _touchStarted = p5.touchStarted;
+        p5.touchStarted = _touchStarted ? (() => {
+          pseudoFocus = isInCanvas();
+          if (pseudoFocus && _touchStarted) {
+            return _touchStarted();
+          }
+        }) : null;
+
+        const _touchMoved = p5.touchMoved;
+        p5.touchMoved = _touchMoved ? (() => {
+          if (hasFocus || pseudoFocus) {
+            return _touchMoved();
+          }
+
+        }) : null;
+
+        const _touchEnded = p5.touchEnded;
+        p5.touchEnded = _touchEnded ? (() => {
+          if (hasFocus || pseudoFocus) {
+            hasFocus = isInCanvas();
+            pseudoFocus = hasFocus;
+            if (_mouseReleased) {
+              return _touchEnded();
+            }
+          }
+        }) : null;
+
         ['keyPressed', 'keyReleased', 'keyTyped'].map((eventName) => {
           const eventHandler = p5[eventName];
           if (eventHandler) {
