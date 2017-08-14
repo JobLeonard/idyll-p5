@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <div id="idyll-mount"><div class="idyll-root" data-reactroot="" data-reactid="1" data-react-checksum="1246978025"><div class="article-header" data-reactid="2"><h1 class="hed" data-reactid="3">idyll-p5</h1><h2 class="dek" data-reactid="4">Embed p5.js sketches in idyll!</h2><div class="byline" data-reactid="5"><!-- react-text: 6 -->By: <!-- /react-text --><a href="https://github.com/JobLeonard/idyll-p5" data-reactid="7">Job van der Zwan</a></div></div><p data-reactid="8"><!-- react-text: 9 -->Embed <!-- /react-text --><a href="https://p5js.org/" data-reactid="10"><!-- react-text: 11 -->p5js sketches<!-- /react-text --></a><!-- react-text: 12 --> (relatively) easily in idyll with this custom component! Source code for the component and this page <!-- /react-text --><a href="https://github.com/JobLeonard/idyll-p5" data-reactid="13"><!-- react-text: 14 -->in this github repository<!-- /react-text --></a></p><!-- react-empty: 15 --><pre data-reactid="16"><code data-reactid="17"><!-- react-text: 18 -->[Sketch webGL:1 ratio:`3/1` sketch:`(p5) =&gt; {
+    <div id="idyll-mount"><div class="idyll-root" data-reactroot="" data-reactid="1" data-react-checksum="-530450938"><div class="article-header" data-reactid="2"><h1 class="hed" data-reactid="3">idyll-p5</h1><h2 class="dek" data-reactid="4">Embed p5.js sketches in idyll!</h2><div class="byline" data-reactid="5"><!-- react-text: 6 -->By: <!-- /react-text --><a href="https://github.com/JobLeonard/idyll-p5" data-reactid="7">Job van der Zwan</a></div></div><p data-reactid="8"><!-- react-text: 9 -->Embed <!-- /react-text --><a href="https://p5js.org/" data-reactid="10"><!-- react-text: 11 -->p5js sketches<!-- /react-text --></a><!-- react-text: 12 --> (relatively) easily in idyll with this custom component! Source code for the component and this page <!-- /react-text --><a href="https://github.com/JobLeonard/idyll-p5" data-reactid="13"><!-- react-text: 14 -->in this github repository<!-- /react-text --></a></p><!-- react-empty: 15 --><pre data-reactid="16"><code data-reactid="17"><!-- react-text: 18 -->[Sketch webGL:1 ratio:`3/1` sketch:`(p5) =&gt; {
   p5.draw = () =&gt; {
     const frame = p5.frameCount;
     p5.background(250);
@@ -207,7 +207,47 @@ A few demos of the new and improved mouse and keyboard listening events.<!-- /re
 [Sketch
   ratio:`4/1`
   alwaysListen:1
-  sketch:mouseSketch /]<!-- /react-text --></code></pre><!-- react-empty: 143 --><!-- react-empty: 144 --><pre data-reactid="145"><code data-reactid="146"><!-- react-text: 147 -->[var
+  sketch:mouseSketch /]<!-- /react-text --></code></pre><span style="color:green;font-style:italic;" data-reactid="143"><!-- react-text: 144 -->[jobleonard note]: <!-- /react-text --><!-- react-text: 145 -->
+I can&#x27;t seem to get the touch events to behave right (and they only work on Chrome for me, not on Firefox). It&#x27;s probably easier to just advice people to rely on the mouse triggers.<!-- /react-text --></span><!-- react-empty: 146 --><!-- react-empty: 147 --><pre data-reactid="148"><code data-reactid="149"><!-- react-text: 150 -->[var
+  name:&quot;touchSketch&quot;
+  value:`(p5, { width, height, updateProps }) =&gt; {
+    let start = 0, ended = 0;
+    let movedX = 0, movedY = 0;
+    p5.draw = () =&gt; {
+      p5.background(0);
+      p5.noStroke();
+      p5.textSize(16);
+      p5.fill(0, 0, 255);
+      p5.text(&#x27;touch start: &#x27; + start, 32, 20);
+      p5.fill(255, 255, 0);
+      p5.text(&#x27;touch moved: &#x27; + movedX + &#x27;, &#x27; + movedY, 32, 40);
+      p5.fill(255, 0, 255);
+      p5.text(&#x27;ended: &#x27; + ended, 32, 60);
+      p5.fill(0, 255, 0);
+    };
+
+    p5.touchStarted = () =&gt; {
+      start++;
+    }
+    p5.touchMoved = () =&gt; {
+      movedX = p5.touches[0].x;
+      movedY = p5.touches[0].y;
+    }
+    p5.touchEnded = () =&gt; {
+      ended++;
+    }
+
+
+}` /]
+
+[Sketch
+  ratio:`4/1`
+  sketch:touchSketch /]
+
+[Sketch
+  ratio:`4/1`
+  alwaysListen:1
+  sketch:touchSketch /]<!-- /react-text --></code></pre><!-- react-empty: 151 --><!-- react-empty: 152 --><pre data-reactid="153"><code data-reactid="154"><!-- react-text: 155 -->[var
   name:&quot;keySketch&quot;
   value:`(p5, { width, height, updateProps }) =&gt; {
     let _keyPressed = &#x27;&#x27;;
@@ -245,7 +285,7 @@ A few demos of the new and improved mouse and keyboard listening events.<!-- /re
 [Sketch
   ratio:`4/1`
   alwaysListen:1
-  sketch:keySketch /]<!-- /react-text --></code></pre><h1 data-reactid="148"><!-- react-text: 149 -->Sketch size and ratio<!-- /react-text --></h1><p data-reactid="150"><!-- react-text: 151 -->By default, the width of the sketch is equal to column width of the text, and height will be half of the width.<!-- /react-text --></p><p data-reactid="152"><!-- react-text: 153 -->You can pass a value to <!-- /react-text --><code data-reactid="154"><!-- react-text: 155 -->width<!-- /react-text --></code><!-- react-text: 156 --> and <!-- /react-text --><code data-reactid="157"><!-- react-text: 158 -->height<!-- /react-text --></code><!-- react-text: 159 --> to override this. The value can be the number of pixels like <!-- /react-text --><code data-reactid="160"><!-- react-text: 161 -->100<!-- /react-text --></code><!-- react-text: 162 -->, or a CSS-valid string like <!-- /react-text --><code data-reactid="163"><!-- react-text: 164 -->&quot;50%&quot;<!-- /react-text --></code><!-- react-text: 165 --> or <!-- /react-text --><code data-reactid="166"><!-- react-text: 167 -->&quot;2em&quot;<!-- /react-text --></code><!-- react-text: 168 -->.<!-- /react-text --></p><p data-reactid="169"><!-- react-text: 170 -->By default, height depends on width, but width does not depend on height. Passing a value to <!-- /react-text --><code data-reactid="171"><!-- react-text: 172 -->width<!-- /react-text --></code><!-- react-text: 173 --> will make <!-- /react-text --><code data-reactid="174"><!-- react-text: 175 -->height<!-- /react-text --></code><!-- react-text: 176 --> half of the new width. Passing a value to <!-- /react-text --><code data-reactid="177"><!-- react-text: 178 -->height<!-- /react-text --></code><!-- react-text: 179 --> will not affect <!-- /react-text --><code data-reactid="180"><!-- react-text: 181 -->width<!-- /react-text --></code><!-- react-text: 182 -->, which will still be as wide as the text column.<!-- /react-text --></p><p data-reactid="183"><!-- react-text: 184 -->To enforce a ratio, you can pass a number to <!-- /react-text --><code data-reactid="185"><!-- react-text: 186 -->ratio<!-- /react-text --></code><!-- react-text: 187 -->, i.e. the expression <!-- /react-text --><code data-reactid="188"><!-- react-text: 189 -->ratio:`3/1`<!-- /react-text --></code><!-- react-text: 190 --> will produce a sketch with a width three times the height.<!-- /react-text --></p><p data-reactid="191"><!-- react-text: 192 -->If no width is defined, but a height is, width depends on height (as you can see below, this part is still a bit buggy). If a ratio, width and height are defined, height is overridden to depend on width.<!-- /react-text --></p><!-- react-empty: 193 --><!-- react-empty: 194 --><!-- react-empty: 195 --><!-- react-empty: 196 --><!-- react-empty: 197 --><!-- react-empty: 198 --><pre data-reactid="199"><code data-reactid="200"><!-- react-text: 201 -->[var name:&quot;sketch_ratio&quot; value:`(p5) =&gt; {
+  sketch:keySketch /]<!-- /react-text --></code></pre><h1 data-reactid="156"><!-- react-text: 157 -->Sketch size and ratio<!-- /react-text --></h1><p data-reactid="158"><!-- react-text: 159 -->By default, the width of the sketch is equal to column width of the text, and height will be half of the width.<!-- /react-text --></p><p data-reactid="160"><!-- react-text: 161 -->You can pass a value to <!-- /react-text --><code data-reactid="162"><!-- react-text: 163 -->width<!-- /react-text --></code><!-- react-text: 164 --> and <!-- /react-text --><code data-reactid="165"><!-- react-text: 166 -->height<!-- /react-text --></code><!-- react-text: 167 --> to override this. The value can be the number of pixels like <!-- /react-text --><code data-reactid="168"><!-- react-text: 169 -->100<!-- /react-text --></code><!-- react-text: 170 -->, or a CSS-valid string like <!-- /react-text --><code data-reactid="171"><!-- react-text: 172 -->&quot;50%&quot;<!-- /react-text --></code><!-- react-text: 173 --> or <!-- /react-text --><code data-reactid="174"><!-- react-text: 175 -->&quot;2em&quot;<!-- /react-text --></code><!-- react-text: 176 -->.<!-- /react-text --></p><p data-reactid="177"><!-- react-text: 178 -->By default, height depends on width, but width does not depend on height. Passing a value to <!-- /react-text --><code data-reactid="179"><!-- react-text: 180 -->width<!-- /react-text --></code><!-- react-text: 181 --> will make <!-- /react-text --><code data-reactid="182"><!-- react-text: 183 -->height<!-- /react-text --></code><!-- react-text: 184 --> half of the new width. Passing a value to <!-- /react-text --><code data-reactid="185"><!-- react-text: 186 -->height<!-- /react-text --></code><!-- react-text: 187 --> will not affect <!-- /react-text --><code data-reactid="188"><!-- react-text: 189 -->width<!-- /react-text --></code><!-- react-text: 190 -->, which will still be as wide as the text column.<!-- /react-text --></p><p data-reactid="191"><!-- react-text: 192 -->To enforce a ratio, you can pass a number to <!-- /react-text --><code data-reactid="193"><!-- react-text: 194 -->ratio<!-- /react-text --></code><!-- react-text: 195 -->, i.e. the expression <!-- /react-text --><code data-reactid="196"><!-- react-text: 197 -->ratio:`3/1`<!-- /react-text --></code><!-- react-text: 198 --> will produce a sketch with a width three times the height.<!-- /react-text --></p><p data-reactid="199"><!-- react-text: 200 -->If no width is defined, but a height is, width depends on height (as you can see below, this part is still a bit buggy). If a ratio, width and height are defined, height is overridden to depend on width.<!-- /react-text --></p><!-- react-empty: 201 --><!-- react-empty: 202 --><!-- react-empty: 203 --><!-- react-empty: 204 --><!-- react-empty: 205 --><!-- react-empty: 206 --><pre data-reactid="207"><code data-reactid="208"><!-- react-text: 209 -->[var name:&quot;sketch_ratio&quot; value:`(p5) =&gt; {
   p5.setup = () =&gt; {
     p5.noLoop();
   };
@@ -280,7 +320,7 @@ A few demos of the new and improved mouse and keyboard listening events.<!-- /re
 [Sketch
   ratio:`2/1`
   height:50
-  sketch:sketch_ratio /]<!-- /react-text --></code></pre><h1 data-reactid="202"><!-- react-text: 203 -->Manually triggered resets<!-- /react-text --></h1><p data-reactid="204"><!-- react-text: 205 -->A <!-- /react-text --><code data-reactid="206"><!-- react-text: 207 -->watchedVal<!-- /react-text --></code><!-- react-text: 208 --> triggers a reset of the sketch whenever the value it watches is changed:<!-- /react-text --></p><div data-reactid="209"><!-- react-empty: 210 --><button data-reactid="211"><!-- react-text: 212 -->Reset Sketch!<!-- /react-text --></button></div><pre data-reactid="213"><code data-reactid="214"><!-- react-text: 215 -->[var name:&quot;resetSketch&quot; value:0 /]
+  sketch:sketch_ratio /]<!-- /react-text --></code></pre><h1 data-reactid="210"><!-- react-text: 211 -->Manually triggered resets<!-- /react-text --></h1><p data-reactid="212"><!-- react-text: 213 -->A <!-- /react-text --><code data-reactid="214"><!-- react-text: 215 -->watchedVal<!-- /react-text --></code><!-- react-text: 216 --> triggers a reset of the sketch whenever the value it watches is changed:<!-- /react-text --></p><div data-reactid="217"><!-- react-empty: 218 --><button data-reactid="219"><!-- react-text: 220 -->Reset Sketch!<!-- /react-text --></button></div><pre data-reactid="221"><code data-reactid="222"><!-- react-text: 223 -->[var name:&quot;resetSketch&quot; value:0 /]
 [var name:&quot;sketch_reset&quot; value:`(p5, {width, height}) =&gt; {
   let x = width/2, y = height/2, dx = 0;
 
